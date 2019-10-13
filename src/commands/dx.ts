@@ -2,12 +2,10 @@ import {Command, flags} from '@oclif/command'
 const sfdx = require('sfdx-node');
 
 export default class Dx extends Command {
-  static description = 'describe the command here'
+  static description = 'Shortcuts for commonly used sfdx commands'
 
   static examples = [
-    `$ q dx
-dx world from ./src/dx.ts!
-`,
+    `$ q dx -l`,
   ]
 
   static flags = {
@@ -15,8 +13,6 @@ dx world from ./src/dx.ts!
     // flag with a value (-n, --name=VALUE)
     orglist: flags.boolean({char: 'l'})
   }
-
-  static args = [{name: 'file'}]
 
   async run() {
     const {args, flags} = this.parse(Dx)
