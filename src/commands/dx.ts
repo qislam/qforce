@@ -18,7 +18,7 @@ export default class Dx extends Command {
     const {args, flags} = this.parse(Dx)
 
     if (flags.orglist) {
-      sfdx.org.list().then((result) => this.log(result))
+      sfdx.org.list().then((result: any) => this.log(result))
     }
   }
 }

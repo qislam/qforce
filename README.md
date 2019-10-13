@@ -28,8 +28,27 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
+* [`q dx`](#q-dx)
 * [`q hello [FILE]`](#q-hello-file)
 * [`q help [COMMAND]`](#q-help-command)
+
+## `q dx`
+
+Shortcuts for commonly used sfdx commands
+
+```
+USAGE
+  $ q dx
+
+OPTIONS
+  -h, --help     show CLI help
+  -l, --orglist
+
+EXAMPLE
+  $ q dx -l
+```
+
+_See code: [src/commands/dx.ts](https://github.com/qislam/q/blob/v0.0.0/src/commands/dx.ts)_
 
 ## `q hello [FILE]`
 
