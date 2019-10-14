@@ -28,6 +28,5 @@ export default class Ol extends Command {
           }
         })
     }
-    
   }
 }
