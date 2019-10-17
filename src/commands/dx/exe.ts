@@ -12,15 +12,26 @@ export default class Exe extends Command {
 
   static flags = {
     help: flags.help({char: 'h'}),
+    username: flags.string({char: 'u'}),
     verbose: flags.boolean({char: 'v'}),
   }
 
   async run() {
     const {flags} = this.parse(Exe)
-    sfdx.apex.execute({apexcodefile: path.join(process.cwd(), 'stuff', 'exe.cls')})
+    if (flags.username) {
+      sfdx.apex.execute({
+        targetusername: flags.username,
+        apexcodefile: path.join(process.cwd(), 'stuff', 'exe.cls')})
       .then( 
-        (result: Object) => fs.writeFileSync(path.join(process.cwd(), 'stuff', 'exe.log'), 
+        (result: any) => fs.writeFileSync(path.join(process.cwd(), 'stuff', 'exe.log'), 
         result.logs, { encoding: 'utf-8' } ) 
       )
+    } else {
+      sfdx.apex.execute({apexcodefile: path.join(process.cwd(), 'stuff', 'exe.cls')})
+        .then( 
+          (result: any) => fs.writeFileSync(path.join(process.cwd(), 'stuff', 'exe.log'), 
+          result.logs, { encoding: 'utf-8' } ) 
+        )
+    }
   }
 }
