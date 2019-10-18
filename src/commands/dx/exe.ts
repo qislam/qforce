@@ -26,12 +26,15 @@ export default class Exe extends Command {
         (result: any) => fs.writeFileSync(path.join(process.cwd(), 'stuff', 'exe.log'), 
         result.logs, { encoding: 'utf-8' } ) 
       )
+      .catch( (err: any) => this.log(err))
     } else {
-      sfdx.apex.execute({apexcodefile: path.join(process.cwd(), 'stuff', 'exe.cls')})
+      sfdx.apex.execute({
+          apexcodefile: path.join(process.cwd(), 'stuff', 'exe.cls')})
         .then( 
           (result: any) => fs.writeFileSync(path.join(process.cwd(), 'stuff', 'exe.log'), 
           result.logs, { encoding: 'utf-8' } ) 
         )
+        .catch( (err: any) => this.log(err))
     }
   }
 }
