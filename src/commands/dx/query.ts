@@ -23,7 +23,7 @@ export default class Query extends Command {
 
   async run() {
     const {flags} = this.parse(Query)
-    const queryString = fs.readFileSync(path.join(process.cwd(), 'stuff', 'query.cls'), 'utf8')
+    const queryString = fs.readFileSync(path.join(process.cwd(), 'stuff', 'query.sql'), 'utf8')
     if (flags.username) {
       sfdx.data.soqlQuery({
             query: queryString,
