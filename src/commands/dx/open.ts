@@ -1,4 +1,5 @@
 import {Command, flags} from '@oclif/command'
+import {IDxOptions} from '../../helper/interfaces'
 const sfdx = require('sfdx-node');
 
 export default class Open extends Command {
@@ -22,21 +23,9 @@ export default class Open extends Command {
       else if (flags.path == 'console') path = '_ui/common/apex/debug/ApexCSIPage'
       else path = flags.path
     }
-    if ( path && flags.username ) {
-      sfdx.org.open({
-        targetusername: flags.username,
-        path: path 
-      })
-    } else if ( !path && flags.username ) {
-      sfdx.org.open({
-        targetusername: flags.username
-      })
-    } else if ( path && !flags.username ) {
-      sfdx.org.open({
-        path: path
-      })
-    } else {
-      sfdx.org.open()
-    }
+    let options: IDxOptions = {}
+    if (flags.username) options.targetusername = flags.username
+    if (path) options.path = path
+    sfdx.org.open(options)
   }
 }

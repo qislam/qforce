@@ -1,4 +1,5 @@
 import {Command, flags} from '@oclif/command'
+import {IDxOptions} from '../../helper/interfaces'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
@@ -18,23 +19,14 @@ export default class Exe extends Command {
 
   async run() {
     const {flags} = this.parse(Exe)
-    if (flags.username) {
-      sfdx.apex.execute({
-        targetusername: flags.username,
-        apexcodefile: path.join(process.cwd(), 'stuff', 'exe.cls')})
-      .then( 
-        (result: any) => fs.writeFileSync(path.join(process.cwd(), 'stuff', 'exe.log'), 
-        result.logs, { encoding: 'utf-8' } ) 
-      )
-      .catch( (err: any) => this.log(err))
-    } else {
-      sfdx.apex.execute({
-          apexcodefile: path.join(process.cwd(), 'stuff', 'exe.cls')})
-        .then( 
-          (result: any) => fs.writeFileSync(path.join(process.cwd(), 'stuff', 'exe.log'), 
-          result.logs, { encoding: 'utf-8' } ) 
-        )
-        .catch( (err: any) => this.log(err))
-    }
+    let options: IDxOptions = {}
+    options.apexcodefile = path.join(process.cwd(), 'stuff', 'exe.cls')
+    if (flags.username) options.targetusername = flags.username
+    sfdx.apex.execute(options)
+    .then( 
+      (result: any) => fs.writeFileSync(path.join(process.cwd(), 'stuff', 'exe.log'), 
+      result.logs, { encoding: 'utf-8' } ) 
+    )
+    .catch( (err: any) => this.log(err))
   }
 }
