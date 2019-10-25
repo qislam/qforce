@@ -6,14 +6,25 @@ const fs = require('fs')
 const csvjson = require('csvjson')
 
 function toCsv(items: any) {
-  return csvjson.toCSV(items.records.map((item: any) => {delete item.attributes; return item}), {headers: 'key'})
+  return csvjson.toCSV(
+    items.records.map(
+      (item: any) => {
+        if (item.attributes) delete item.attributes; 
+        for (let key of Object.keys(item)) {
+          if(item[key].attributes) delete item[key].attributes
+        }
+        return item
+      }
+    ), 
+    {headers: 'relative'}
+  )
 }
 
 export default class Query extends Command {
   static description = 'Execute anonymous apex.'
 
   static examples = [
-    `$ q dx:exe`,
+    `$ q dx:query`,
   ]
 
   static flags = {
@@ -30,8 +41,10 @@ export default class Query extends Command {
     if (flags.username) options.targetusername = flags.username
     sfdx.data.soqlQuery(options)
     .then( 
-      (result: any) => fs.writeFileSync(path.join(process.cwd(), 'stuff', 'query.csv'), 
-      toCsv(result), { encoding: 'utf-8' } ) 
+      (result: any) => {
+        this.log(result.records[0].SBQQ__PriceRule2__r)
+        fs.writeFileSync(path.join(process.cwd(), 'stuff', 'query.csv'), toCsv(result), {encoding: 'utf-8'})
+      }  
     )
   }
 }
