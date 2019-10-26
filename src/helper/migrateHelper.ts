@@ -8,7 +8,13 @@ function executeMigrationStep(step: migrationStep) {
   console.log('I am being called')
   let options: dxOptions = {}
   options.query = step.query
-  if (this.flags.source) options.targetusername = this.flags.source
+  if (this.source) options.targetusername = this.source
+  if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
+    fs.mkdirSync(path.join(process.cwd(), 'data'))
+  }
+  if (!fs.existsSync(path.join(process.cwd(), 'apex'))) {
+    fs.mkdirSync(path.join(process.cwd(), 'apex'))
+  }
   sfdx.data.soqlQuery(options)
     .then(
       (result: any) => {
@@ -21,7 +27,7 @@ function executeMigrationStep(step: migrationStep) {
         })
         if (step.transform) result.records.map(step.transform)
         fs.writeFileSync(
-          path.join(process.cwd(), 'stuff', `${step.name}-data.csv`), 
+          path.join(process.cwd(), 'data', `${step.name}-data.csv`), 
           csvjson.toCSV(result.records, {headers: 'relative'}), 
           {encoding: 'utf-8'})
       }
