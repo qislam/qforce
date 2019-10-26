@@ -16,9 +16,10 @@ export default class Migrate extends Command {
   }
 
   async run() {
+    this.log(executeMigrationStep.prototype)
     const {flags} = this.parse(Migrate)
     const Migration = await import(path.join(process.cwd(), 'stuff', 'migrationPlan.ts'))
-    Migration.Plan.steps.forEach(step => {
+    Migration.Plan.steps.forEach( (step: migrationStep) => {
       let options: dxOptions = {}
       options.query = step.query
       if (flags.source) options.targetusername = flags.source
@@ -33,7 +34,6 @@ export default class Migrate extends Command {
               }
             })
             if (step.transform) result.records.map(step.transform)
-            this.log(result.records)
             fs.writeFileSync(
               path.join(process.cwd(), 'stuff', `${step.name}-data.csv`), 
               csvjson.toCSV(result.records, {headers: 'relative'}), 
