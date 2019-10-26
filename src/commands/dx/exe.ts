@@ -1,5 +1,5 @@
 import {Command, flags} from '@oclif/command'
-import {IDxOptions} from '../../helper/interfaces'
+import {dxOptions} from '../../helper/interfaces'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
@@ -19,7 +19,7 @@ export default class Exe extends Command {
 
   async run() {
     const {flags} = this.parse(Exe)
-    let options: IDxOptions = {}
+    let options: dxOptions = {}
     options.apexcodefile = path.join(process.cwd(), 'stuff', 'exe.cls')
     if (flags.username) options.targetusername = flags.username
     sfdx.apex.execute(options)

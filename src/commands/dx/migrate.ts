@@ -1,5 +1,6 @@
 import {Command, flags} from '@oclif/command'
-import {IDxOptions} from '../../helper/interfaces'
+import {executeMigrationStep} from '../../helper/migrateHelper'
+import {dxOptions, csvLine, migrationStep} from '../../helper/interfaces'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
@@ -17,15 +18,28 @@ export default class Migrate extends Command {
   async run() {
     const {flags} = this.parse(Migrate)
     const Migration = await import(path.join(process.cwd(), 'stuff', 'migrationPlan.ts'))
-    let options: IDxOptions = {}
-    options.query = Migration.Plan.steps[0].query
-    if (flags.source) options.targetusername = flags.source
-    sfdx.data.soqlQuery(options)
-      .then(
-        (result: any) => {
-          result.records.map(Migration.Plan.steps[0].transform)
-          this.log(result)
-        }
-      )
+    Migration.Plan.steps.forEach(step => {
+      let options: dxOptions = {}
+      options.query = step.query
+      if (flags.source) options.targetusername = flags.source
+      sfdx.data.soqlQuery(options)
+        .then(
+          (result: any) => {
+            // remove attributes property
+            result.records.map( (line: csvLine) => {
+              if (line.attributes) delete line.attributes
+              for (let key of Object.keys(line)) {
+                if(line[key].attributes) delete line[key].attributes
+              }
+            })
+            if (step.transform) result.records.map(step.transform)
+            this.log(result.records)
+            fs.writeFileSync(
+              path.join(process.cwd(), 'stuff', `${step.name}-data.csv`), 
+              csvjson.toCSV(result.records, {headers: 'relative'}), 
+              {encoding: 'utf-8'})
+          }
+        )
+    });
   }
 }

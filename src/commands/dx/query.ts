@@ -1,5 +1,5 @@
 import {Command, flags} from '@oclif/command'
-import {IDxOptions} from '../../helper/interfaces'
+import {dxOptions} from '../../helper/interfaces'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
@@ -36,7 +36,7 @@ export default class Query extends Command {
   async run() {
     const {flags} = this.parse(Query)
     const queryString = fs.readFileSync(path.join(process.cwd(), 'stuff', 'query.sql'), 'utf8')
-    let options: IDxOptions = {}
+    let options: dxOptions = {}
     options.query = queryString
     if (flags.username) options.targetusername = flags.username
     sfdx.data.soqlQuery(options)
