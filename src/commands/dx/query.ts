@@ -42,7 +42,6 @@ export default class Query extends Command {
     sfdx.data.soqlQuery(options)
     .then( 
       (result: any) => {
-        this.log(result.records[0].SBQQ__PriceRule2__r)
         fs.writeFileSync(path.join(process.cwd(), 'stuff', 'query.csv'), toCsv(result), {encoding: 'utf-8'})
       }  
     )
