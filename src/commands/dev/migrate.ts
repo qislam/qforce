@@ -21,7 +21,9 @@ export default class Migrate extends Command {
     let context: looseObject = {}
     context.flags = flags
     context.migrationPlan = Migration.Plan
-    executeMigrationSteps.call(context)
+    context.currentStepIndex = 0
+    context.currentStepStage = 'Ready to start'
+    executeMigrationSteps(context)
     //Migration.Plan.steps.forEach(executeMigrationSteps, flags);
   }
 }

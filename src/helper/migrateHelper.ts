@@ -4,12 +4,15 @@ const path = require('path')
 const fs = require('fs')
 const csvjson = require('csvjson')
 
-function executeMigrationSteps() {
-  let step: migrationStep = this.migrationPlan.steps[0]
-  if (step.skip) return
+function executeMigrationSteps(context: looseObject) {
+  let step: migrationStep = context.migrationPlan.steps[context.currentStepIndex]
+  if (step.skip) {
+    context.currentStepIndex =+ 1
+    executeMigrationSteps(context)
+  }
   let options: dxOptions = {}
   options.query = step.query
-  if (this.flags.source) options.targetusername = this.flags.source
+  if (context.flags.source) options.targetusername = context.flags.source
   if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
     fs.mkdirSync(path.join(process.cwd(), 'data'))
   }
@@ -47,14 +50,13 @@ function executeMigrationSteps() {
         path.join(process.cwd(), 'data', `${step.name}-data.csv`), 
         csvjson.toCSV(result.records, {headers: 'relative'}), 
         {encoding: 'utf-8'})
-      if (this.flags.destination) {
+      if (context.flags.destination) {
         options = {}
-        options.targetusername = this.flags.destination
+        options.targetusername = context.flags.destination
         options.csvfile = path.join(process.cwd(), 'data', `${step.name}-data.csv`)
         options.externalid = step.externalid
         options.sobjecttype = step.sobjecttype
         options.loglevel = 'trace'
-        console.log(options)
         sfdx.data.bulkUpsert(options)
         .then(
           (result:any) => {
