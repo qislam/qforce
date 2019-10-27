@@ -19,6 +19,7 @@ interface migrationStep {
     name: string,
     description?: string,
     query?: string,
+    skip?: boolean,
     transformation?: tranformationFunction
     [key: string]: any
 }

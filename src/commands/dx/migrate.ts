@@ -12,7 +12,7 @@ export default class Migrate extends Command {
   static flags = {
     help: flags.help({char: 'h'}),
     source: flags.string({char: 's', required: true, description: 'source org username or alias'}),
-    target: flags.string({char: 'd', description: 'destination org username or alias'}),
+    destination: flags.string({char: 'd', description: 'destination org username or alias'}),
   }
 
   async run() {
