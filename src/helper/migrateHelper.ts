@@ -5,6 +5,7 @@ const fs = require('fs')
 const csvjson = require('csvjson')
 
 function executeMigrationStep(step: migrationStep) {
+  
   if (step.skip) return
   let options: dxOptions = {}
   options.query = step.query
