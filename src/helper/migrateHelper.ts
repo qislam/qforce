@@ -1,15 +1,15 @@
-import {migrationStep, csvLine, dxOptions} from './interfaces'
+import {migrationStep, looseObject, dxOptions} from './interfaces'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
 const csvjson = require('csvjson')
 
-function executeMigrationStep(step: migrationStep) {
-  
+function executeMigrationSteps() {
+  let step: migrationStep = this.migrationPlan.steps[0]
   if (step.skip) return
   let options: dxOptions = {}
   options.query = step.query
-  if (this.source) options.targetusername = this.source
+  if (this.flags.source) options.targetusername = this.flags.source
   if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
     fs.mkdirSync(path.join(process.cwd(), 'data'))
   }
@@ -22,7 +22,7 @@ function executeMigrationStep(step: migrationStep) {
       // Binding this to allow access to props defined in project plan.
       if (step.transform) result.records.map(step.transform.bind(step))
       // remove attributes property and csv cleanup
-      result.records.map( (line: csvLine) => {
+      result.records.map( (line: looseObject) => {
         if (line.attributes) delete line.attributes
         for (let key of Object.keys(line)) {
           if (typeof line[key] === 'string') {
@@ -47,9 +47,9 @@ function executeMigrationStep(step: migrationStep) {
         path.join(process.cwd(), 'data', `${step.name}-data.csv`), 
         csvjson.toCSV(result.records, {headers: 'relative'}), 
         {encoding: 'utf-8'})
-      if (this.destination) {
+      if (this.flags.destination) {
         options = {}
-        options.targetusername = this.destination
+        options.targetusername = this.flags.destination
         options.csvfile = path.join(process.cwd(), 'data', `${step.name}-data.csv`)
         options.externalid = step.externalid
         options.sobjecttype = step.sobjecttype
@@ -65,4 +65,4 @@ function executeMigrationStep(step: migrationStep) {
     })
 }
 
-export {executeMigrationStep}
+export {executeMigrationSteps}

@@ -7,12 +7,12 @@ interface dxOptions {
     [key: string]: any
 }
 
-interface csvLine {
+interface looseObject {
     [key: string]: any
 }
 
 interface tranformationFunction {
-    (lines: csvLine[]): csvLine[]
+    (lines: looseObject[]): looseObject[]
 }
 
 interface migrationStep {
@@ -24,5 +24,5 @@ interface migrationStep {
     [key: string]: any
 }
 
-export {dxOptions, csvLine, migrationStep}
+export {dxOptions, looseObject, migrationStep}
 

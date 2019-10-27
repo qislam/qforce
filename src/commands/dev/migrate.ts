@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
-import {executeMigrationStep} from '../../helper/migrateHelper'
-import {dxOptions, csvLine, migrationStep} from '../../helper/interfaces'
+import {executeMigrationSteps} from '../../helper/migrateHelper'
+import {dxOptions, looseObject, migrationStep} from '../../helper/interfaces'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
@@ -18,6 +18,10 @@ export default class Migrate extends Command {
   async run() {
     const {flags} = this.parse(Migrate)
     const Migration = await import(path.join(process.cwd(), 'migrationPlan.ts'))
-    Migration.Plan.steps.forEach(executeMigrationStep, flags);
+    let context: looseObject = {}
+    context.flags = flags
+    context.migrationPlan = Migration.Plan
+    executeMigrationSteps.call(context)
+    //Migration.Plan.steps.forEach(executeMigrationSteps, flags);
   }
 }
