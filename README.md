@@ -19,7 +19,7 @@ $ npm install -g qforce
 $ qforce COMMAND
 running command...
 $ qforce (-v|--version|version)
-qforce/0.0.1 darwin-x64 node-v10.13.0
+qforce/0.0.2 darwin-x64 node-v10.13.0
 $ qforce --help [COMMAND]
 USAGE
   $ qforce COMMAND
@@ -28,16 +28,13 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-- [qforce](#qforce)
-- [Usage](#usage)
-- [Commands](#commands)
-  - [`qforce dev:migrate`](#qforce-devmigrate)
-  - [`qforce dx:exe`](#qforce-dxexe)
-  - [`qforce dx:ol`](#qforce-dxol)
-  - [`qforce dx:open`](#qforce-dxopen)
-  - [`qforce dx:query`](#qforce-dxquery)
-  - [`qforce hello [FILE]`](#qforce-hello-file)
-  - [`qforce help [COMMAND]`](#qforce-help-command)
+* [`qforce dev:migrate`](#qforce-devmigrate)
+* [`qforce dx:exe`](#qforce-dxexe)
+* [`qforce dx:ol`](#qforce-dxol)
+* [`qforce dx:open`](#qforce-dxopen)
+* [`qforce dx:query`](#qforce-dxquery)
+* [`qforce hello [FILE]`](#qforce-hello-file)
+* [`qforce help [COMMAND]`](#qforce-help-command)
 
 ## `qforce dev:migrate`
 
@@ -53,7 +50,7 @@ OPTIONS
   -s, --source=source            (required) source org username or alias
 ```
 
-_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/dev/migrate.ts)_
+_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.0.2/src/commands/dev/migrate.ts)_
 
 ## `qforce dx:exe`
 
@@ -72,7 +69,7 @@ EXAMPLE
   $ q dx:exe
 ```
 
-_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/dx/exe.ts)_
+_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.0.2/src/commands/dx/exe.ts)_
 
 ## `qforce dx:ol`
 
@@ -90,7 +87,7 @@ EXAMPLE
   $ q dx:ol
 ```
 
-_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/dx/ol.ts)_
+_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.0.2/src/commands/dx/ol.ts)_
 
 ## `qforce dx:open`
 
@@ -109,7 +106,7 @@ EXAMPLE
   $ q dx:open -u uat
 ```
 
-_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/dx/open.ts)_
+_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.0.2/src/commands/dx/open.ts)_
 
 ## `qforce dx:query`
 
@@ -128,7 +125,7 @@ EXAMPLE
   $ q dx:query
 ```
 
-_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/dx/query.ts)_
+_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.0.2/src/commands/dx/query.ts)_
 
 ## `qforce hello [FILE]`
 
@@ -148,7 +145,7 @@ EXAMPLE
   hello world from ./src/hello.ts!
 ```
 
-_See code: [src/commands/hello.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/hello.ts)_
+_See code: [src/commands/hello.ts](https://github.com/qislam/qforce/blob/v0.0.2/src/commands/hello.ts)_
 
 ## `qforce help [COMMAND]`
 
