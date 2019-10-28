@@ -6,7 +6,7 @@
   "bin": {
     "qforce": "./bin/run"
   },
-  "bugs": "https://github.com/qislam/q/issues",
+  "bugs": "https://github.com/qislam/qforce/issues",
   "dependencies": {
     "@oclif/command": "^1.5.19",
     "@oclif/config": "^1.13.3",
