@@ -1,7 +1,7 @@
 qforce
 =
 
-Commands by Qamar
+Commands to help with salesforce development process.
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/q.svg)](https://npmjs.org/package/q)
@@ -28,13 +28,16 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`qforce dev:migrate`](#qforce-devmigrate)
-* [`qforce dx:exe`](#qforce-dxexe)
-* [`qforce dx:ol`](#qforce-dxol)
-* [`qforce dx:open`](#qforce-dxopen)
-* [`qforce dx:query`](#qforce-dxquery)
-* [`qforce hello [FILE]`](#qforce-hello-file)
-* [`qforce help [COMMAND]`](#qforce-help-command)
+- [qforce](#qforce)
+- [Usage](#usage)
+- [Commands](#commands)
+  - [`qforce dev:migrate`](#qforce-devmigrate)
+  - [`qforce dx:exe`](#qforce-dxexe)
+  - [`qforce dx:ol`](#qforce-dxol)
+  - [`qforce dx:open`](#qforce-dxopen)
+  - [`qforce dx:query`](#qforce-dxquery)
+  - [`qforce hello [FILE]`](#qforce-hello-file)
+  - [`qforce help [COMMAND]`](#qforce-help-command)
 
 ## `qforce dev:migrate`
 
