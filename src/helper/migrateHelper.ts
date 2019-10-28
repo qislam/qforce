@@ -15,7 +15,7 @@ function executeMigrationSteps(context: looseObject) {
     if (context.currentStepIndex < context.migrationPlan.steps.length) {
       executeMigrationSteps(context)
     } else {
-      console.log('Process completed(last step skipped).')
+      console.log('Process completed.')
     }
   }
   if (context.currentStepIndex < context.migrationPlan.steps.length && context.currentStepStage == 'Ready to start') {
