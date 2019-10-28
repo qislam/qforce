@@ -18,12 +18,16 @@ export default class Migrate extends Command {
   async run() {
     const {flags} = this.parse(Migrate)
     const Migration = await import(path.join(process.cwd(), 'migrationPlan.ts'))
+
+    if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
+      fs.mkdirSync(path.join(process.cwd(), 'data'))
+    }
+
     let context: looseObject = {}
     context.flags = flags
     context.migrationPlan = Migration.Plan
     context.currentStepIndex = 0
     context.currentStepStage = 'Ready to start'
     executeMigrationSteps(context)
-    //Migration.Plan.steps.forEach(executeMigrationSteps, flags);
   }
 }
