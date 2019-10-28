@@ -1,10 +1,10 @@
 {
-  "name": "q",
-  "description": "Commands by Qamar",
-  "version": "0.0.0",
+  "name": "qforce",
+  "description": "Commands to help with salesforce development.",
+  "version": "0.0.1",
   "author": "Qamar Islam @qislam",
   "bin": {
-    "q": "./bin/run"
+    "qforce": "./bin/run"
   },
   "bugs": "https://github.com/qislam/q/issues",
   "dependencies": {
@@ -39,7 +39,7 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/qislam/q",
+  "homepage": "https://github.com/qislam/qforce",
   "keywords": [
     "oclif"
   ],
@@ -47,12 +47,12 @@
   "main": "lib/index.js",
   "oclif": {
     "commands": "./lib/commands",
-    "bin": "q",
+    "bin": "qforce",
     "plugins": [
       "@oclif/plugin-help"
     ]
   },
-  "repository": "qislam/q",
+  "repository": "qislam/qforce",
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "tslint -p test -t stylish",

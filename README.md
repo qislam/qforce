@@ -1,4 +1,4 @@
-q
+qforce
 =
 
 Commands by Qamar
@@ -12,52 +12,53 @@ Commands by Qamar
 * [Usage](#usage)
 * [Commands](#commands)
 <!-- tocstop -->
-* [Usage](#usage)
-* [Commands](#commands)
-<!-- tocstop -->
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g q
-$ q COMMAND
+$ npm install -g qforce
+$ qforce COMMAND
 running command...
-$ q (-v|--version|version)
-q/0.0.0 win32-x64 node-v12.12.0
-$ q --help [COMMAND]
+$ qforce (-v|--version|version)
+qforce/0.0.1 darwin-x64 node-v10.13.0
+$ qforce --help [COMMAND]
 USAGE
-  $ q COMMAND
-...
-```
-<!-- usagestop -->
-```sh-session
-$ npm install -g q
-$ q COMMAND
-running command...
-$ q (-v|--version|version)
-q/0.0.0 darwin-x64 node-v10.13.0
-$ q --help [COMMAND]
-USAGE
-  $ q COMMAND
+  $ qforce COMMAND
 ...
 ```
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`q dx:exe`](#q-dxexe)
-* [`q dx:migrate [FILE]`](#q-dxmigrate-file)
-* [`q dx:ol`](#q-dxol)
-* [`q dx:open`](#q-dxopen)
-* [`q dx:query`](#q-dxquery)
-* [`q hello [FILE]`](#q-hello-file)
-* [`q help [COMMAND]`](#q-help-command)
+* [`qforce dev:migrate`](#qforce-devmigrate)
+* [`qforce dx:exe`](#qforce-dxexe)
+* [`qforce dx:ol`](#qforce-dxol)
+* [`qforce dx:open`](#qforce-dxopen)
+* [`qforce dx:query`](#qforce-dxquery)
+* [`qforce hello [FILE]`](#qforce-hello-file)
+* [`qforce help [COMMAND]`](#qforce-help-command)
 
-## `q dx:exe`
+## `qforce dev:migrate`
+
+Migrate data from one org to another based on a migration plan.
+
+```
+USAGE
+  $ qforce dev:migrate
+
+OPTIONS
+  -d, --destination=destination  destination org username or alias
+  -h, --help                     show CLI help
+  -s, --source=source            (required) source org username or alias
+```
+
+_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/dev/migrate.ts)_
+
+## `qforce dx:exe`
 
 Execute anonymous apex.
 
 ```
 USAGE
-  $ q dx:exe
+  $ qforce dx:exe
 
 OPTIONS
   -h, --help               show CLI help
@@ -68,31 +69,15 @@ EXAMPLE
   $ q dx:exe
 ```
 
-_See code: [src\commands\dx\exe.ts](https://github.com/qislam/q/blob/v0.0.0/src\commands\dx\exe.ts)_
+_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/dx/exe.ts)_
 
-## `q dx:migrate [FILE]`
-
-describe the command here
-
-```
-USAGE
-  $ q dx:migrate [FILE]
-
-OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
-```
-
-_See code: [src\commands\dx\migrate.ts](https://github.com/qislam/q/blob/v0.0.0/src\commands\dx\migrate.ts)_
-
-## `q dx:ol`
+## `qforce dx:ol`
 
 List of available orgs.
 
 ```
 USAGE
-  $ q dx:ol
+  $ qforce dx:ol
 
 OPTIONS
   -h, --help     show CLI help
@@ -102,15 +87,15 @@ EXAMPLE
   $ q dx:ol
 ```
 
-_See code: [src\commands\dx\ol.ts](https://github.com/qislam/q/blob/v0.0.0/src\commands\dx\ol.ts)_
+_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/dx/ol.ts)_
 
-## `q dx:open`
+## `qforce dx:open`
 
 Open an org.
 
 ```
 USAGE
-  $ q dx:open
+  $ qforce dx:open
 
 OPTIONS
   -h, --help               show CLI help
@@ -121,15 +106,15 @@ EXAMPLE
   $ q dx:open -u uat
 ```
 
-_See code: [src\commands\dx\open.ts](https://github.com/qislam/q/blob/v0.0.0/src\commands\dx\open.ts)_
+_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/dx/open.ts)_
 
-## `q dx:query`
+## `qforce dx:query`
 
 Execute anonymous apex.
 
 ```
 USAGE
-  $ q dx:query
+  $ qforce dx:query
 
 OPTIONS
   -h, --help               show CLI help
@@ -140,15 +125,15 @@ EXAMPLE
   $ q dx:query
 ```
 
-_See code: [src\commands\dx\query.ts](https://github.com/qislam/q/blob/v0.0.0/src\commands\dx\query.ts)_
+_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/dx/query.ts)_
 
-## `q hello [FILE]`
+## `qforce hello [FILE]`
 
 describe the command here
 
 ```
 USAGE
-  $ q hello [FILE]
+  $ qforce hello [FILE]
 
 OPTIONS
   -f, --force
@@ -160,74 +145,15 @@ EXAMPLE
   hello world from ./src/hello.ts!
 ```
 
-_See code: [src\commands\hello.ts](https://github.com/qislam/q/blob/v0.0.0/src\commands\hello.ts)_
+_See code: [src/commands/hello.ts](https://github.com/qislam/qforce/blob/v0.0.1/src/commands/hello.ts)_
 
-## `q help [COMMAND]`
+## `qforce help [COMMAND]`
 
-display help for q
-
-```
-USAGE
-  $ q help [COMMAND]
-
-ARGUMENTS
-  COMMAND  command to show help for
-
-OPTIONS
-  --all  see all commands in CLI
-```
-
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.2.1/src\commands\help.ts)_
-<!-- commandsstop -->
-* [`q dx`](#q-dx)
-* [`q hello [FILE]`](#q-hello-file)
-* [`q help [COMMAND]`](#q-help-command)
-
-## `q dx`
-
-Shortcuts for commonly used sfdx commands
+display help for qforce
 
 ```
 USAGE
-  $ q dx
-
-OPTIONS
-  -h, --help     show CLI help
-  -l, --orglist
-
-EXAMPLE
-  $ q dx -l
-```
-
-_See code: [src/commands/dx.ts](https://github.com/qislam/q/blob/v0.0.0/src/commands/dx.ts)_
-
-## `q hello [FILE]`
-
-describe the command here
-
-```
-USAGE
-  $ q hello [FILE]
-
-OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
-
-EXAMPLE
-  $ q hello
-  hello world from ./src/hello.ts!
-```
-
-_See code: [src/commands/hello.ts](https://github.com/qislam/q/blob/v0.0.0/src/commands/hello.ts)_
-
-## `q help [COMMAND]`
-
-display help for q
-
-```
-USAGE
-  $ q help [COMMAND]
+  $ qforce help [COMMAND]
 
 ARGUMENTS
   COMMAND  command to show help for
