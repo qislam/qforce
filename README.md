@@ -19,7 +19,7 @@ $ npm install -g qforce
 $ qforce COMMAND
 running command...
 $ qforce (-v|--version|version)
-qforce/0.0.1 darwin-x64 node-v10.13.0
+qforce/0.0.3 darwin-x64 node-v10.13.0
 $ qforce --help [COMMAND]
 USAGE
   $ qforce COMMAND
@@ -28,13 +28,16 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`qforce dev:migrate`](#qforce-devmigrate)
-* [`qforce dx:exe`](#qforce-dxexe)
-* [`qforce dx:ol`](#qforce-dxol)
-* [`qforce dx:open`](#qforce-dxopen)
-* [`qforce dx:query`](#qforce-dxquery)
-* [`qforce hello [FILE]`](#qforce-hello-file)
-* [`qforce help [COMMAND]`](#qforce-help-command)
+- [qforce](#qforce)
+- [Usage](#usage)
+- [Commands](#commands)
+  - [`qforce dev:migrate`](#qforce-devmigrate)
+  - [`qforce dx:exe`](#qforce-dxexe)
+  - [`qforce dx:ol`](#qforce-dxol)
+  - [`qforce dx:open`](#qforce-dxopen)
+  - [`qforce dx:query`](#qforce-dxquery)
+  - [`qforce hello [FILE]`](#qforce-hello-file)
+  - [`qforce help [COMMAND]`](#qforce-help-command)
 
 ## `qforce dev:migrate`
 
