@@ -1,11 +1,13 @@
 import {migrationStep, looseObject, dxOptions} from './interfaces'
+import {poll, prepJsonForCsv} from './utility'
+
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
 const csvjson = require('csvjson')
 
 function executeMigrationSteps(context: looseObject) {
-  if (context.currentStepIndex == context.migrationPlan.steps.length) {
+  if (context.currentStepIndex >= context.migrationPlan.steps.length) {
     console.log('Process completed.')
     return
   }
@@ -19,36 +21,14 @@ function executeMigrationSteps(context: looseObject) {
     }
   }
   if (context.currentStepIndex < context.migrationPlan.steps.length && context.currentStepStage == 'Ready to start') {
-    console.log('calling extractTransform')
+    console.log('calling extractTransform for step ' + context.currentStepIndex)
     extractTransform(context)
   }
   if (context.currentStepIndex < context.migrationPlan.steps.length && context.currentStepStage == 'Ready to load') {
-    console.log('calling loadData')
+    console.log('calling loadData for step ' + context.currentStepIndex)
     loadData(context)
   }
 
-}
-
-function prepJsonForCsv(line: looseObject) {
-  if (line.attributes) delete line.attributes
-  for (let key of Object.keys(line)) {
-    if (typeof line[key] === 'string') {
-      line[key] = line[key].replace(/"/g, '""')
-    } 
-    if (line[key] == 'null') line[key] = ''
-    line[key] = '"' + line[key] + '"'
-    if (line[key].attributes) {
-      delete line[key].attributes
-      for (let innerKey of Object.keys(line[key])) {
-        if (typeof line[key][innerKey] === 'string') {
-          line[key][innerKey] = line[key][innerKey].replace(/"/g, '""')
-        } 
-        if (line[key][innerKey] == 'null') line[key][innerKey] = ''
-        line[key][innerKey] = '"' + line[key][innerKey] + '"'
-      }
-    } 
-  }
-  return line
 }
 
 function extractTransform(context: looseObject) {
@@ -74,6 +54,34 @@ function extractTransform(context: looseObject) {
   )
 }
 
+function getDataBulkStatus(context: looseObject) {
+  console.log('polling status for step ' + context.currentStepIndex)
+  let options: dxOptions = {}
+  if (context.currentStepLog != null) {
+    options.targetusername = context.flags.destination
+    options.jobid = context.currentStepLog.jobId
+    options.batchid = context.currentStepLog.id
+    sfdx.data.bulkStatus(options)
+    .then(
+      (result: any) => {
+        console.log(result[0])
+        if (result[0].state == 'Completed') {
+          context.currentStepCompleted = true
+          context.currentStepLog = null
+          context.currentStepIndex = context.currentStepIndex + 1
+          context.currentStepStage = 'Ready to start'
+          if(context.currentStepIndex < context.migrationPlan.steps.length) {
+            executeMigrationSteps(context)
+          }
+        }
+      }
+    )
+  }
+  if (context.currentStepLog == null) return context
+  if (context.currentStepCompleted) return context
+  else return null
+}
+
 function loadData(context: looseObject) {
   let step: migrationStep = context.migrationPlan.steps[context.currentStepIndex]
   if (context.flags.destination === undefined) {
@@ -92,13 +100,16 @@ function loadData(context: looseObject) {
     sfdx.data.bulkUpsert(options)
     .then(
       (result:any) => {
-        console.log(result)
-        context.currentStepLog = result
-        context.currentStepIndex = context.currentStepIndex + 1
-        context.currentStepStage = 'Ready to start'
-        if (context.currentStepIndex < context.migrationPlan.steps.length) {
-          executeMigrationSteps(context)
-        }
+        context.currentStepLog = result[0]
+        context.currentStepCompleted = false
+        poll(getDataBulkStatus, 30000, 5000, context)
+        .then( (result: any) => {
+          context = result
+          context.currentStepCompleted = false;
+        })
+        .catch(
+          (result: any) => console.log(result)
+        )
       }
     )
   }
