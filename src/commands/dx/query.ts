@@ -1,23 +1,13 @@
 import {Command, flags} from '@oclif/command'
 import {dxOptions} from '../../helper/interfaces'
+import {prepJsonForCsv} from '../../helper/utility'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
 const csvjson = require('csvjson')
 
 function toCsv(items: any) {
-  return csvjson.toCSV(
-    items.records.map(
-      (item: any) => {
-        if (item.attributes) delete item.attributes; 
-        for (let key of Object.keys(item)) {
-          if(item[key].attributes) delete item[key].attributes
-        }
-        return item
-      }
-    ), 
-    {headers: 'relative'}
-  )
+  return csvjson.toCSV(items, {headers: 'relative'})
 }
 
 export default class Query extends Command {
@@ -42,7 +32,8 @@ export default class Query extends Command {
     sfdx.data.soqlQuery(options)
     .then( 
       (result: any) => {
-        fs.writeFileSync(path.join(process.cwd(), 'stuff', 'query.csv'), toCsv(result), {encoding: 'utf-8'})
+        result.records.map(prepJsonForCsv)
+        fs.writeFileSync(path.join(process.cwd(), 'stuff', 'query.csv'), csvjson.toCSV(result.records, {headers: 'relative'}), {encoding: 'utf-8'})
       }  
     )
   }
