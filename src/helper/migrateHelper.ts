@@ -1,12 +1,13 @@
 import {migrationStep, looseObject, dxOptions} from './interfaces'
 import {poll, prepJsonForCsv} from './utility'
+import {StepStage} from './enums'
 
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
 const csvjson = require('csvjson')
 
-function executeMigrationSteps(context: looseObject) {
+async function executeMigrationSteps(context: looseObject) {
   if (context.currentStepIndex >= context.migrationPlan.steps.length) {
     console.log('Process completed.')
     return
@@ -20,13 +21,15 @@ function executeMigrationSteps(context: looseObject) {
       console.log('Process completed.')
     }
   }
-  if (context.currentStepIndex < context.migrationPlan.steps.length && context.currentStepStage == 'Ready to start') {
+  if (context.currentStepIndex < context.migrationPlan.steps.length 
+      && context.currentStepStage == 'Ready to start') {
     console.log('calling extractTransform for step ' + context.currentStepIndex)
     extractTransform(context)
   }
-  if (context.currentStepIndex < context.migrationPlan.steps.length && context.currentStepStage == 'Ready to load') {
+  if (context.currentStepIndex < context.migrationPlan.steps.length 
+      && context.currentStepStage == 'Ready to load') {
     console.log('calling loadData for step ' + context.currentStepIndex)
-    loadData(context)
+    let loadResults = await handleLoad(context)
   }
 
 }
@@ -54,35 +57,37 @@ function extractTransform(context: looseObject) {
   )
 }
 
-function getDataBulkStatus(context: looseObject) {
+async function getDataBulkStatus(context: looseObject) {
   console.log('polling status for step ' + context.currentStepIndex)
   let options: dxOptions = {}
+  let statusResults
   if (context.currentStepLog != null) {
     options.targetusername = context.flags.destination
     options.jobid = context.currentStepLog.jobId
     options.batchid = context.currentStepLog.id
-    sfdx.data.bulkStatus(options)
-    .then(
-      (result: any) => {
-        console.log(result[0])
-        if (result[0].state == 'Completed') {
-          context.currentStepCompleted = true
-          context.currentStepLog = null
-          context.currentStepIndex = context.currentStepIndex + 1
-          context.currentStepStage = 'Ready to start'
-          if(context.currentStepIndex < context.migrationPlan.steps.length) {
-            executeMigrationSteps(context)
-          }
-        }
-      }
-    )
-  }
-  if (context.currentStepLog == null) return context
-  if (context.currentStepCompleted) return context
-  else return null
+    statusResults = await sfdx.data.bulkStatus(options)
+    if (statusResults[0].state == 'Completed') {
+      return statusResults[0]
+    } else {
+      return null
+    }
 }
 
-function loadData(context: looseObject) {
+async function handleLoad(context: looseObject) {
+  let step: migrationStep = context.migrationPlan.steps[context.currentStepIndex]
+  let options: dxOptions = {}
+  options.targetusername = context.flags.destination
+  options.csvfile = path.join(process.cwd(), 'data', `${step.name}-data.csv`)
+  options.externalid = step.externalid
+  options.sobjecttype = step.sobjecttype
+  const loadResults = await sfdx.data.bulkUpsert(options)
+  context.currentStepLog = loadResults[0]
+  const pollResult = await poll(getDataBulkStatus, 30000, 5000, context)
+  if(pollResult) return pollResult
+  else return (new Error('Timed out while polling for results.'))
+}
+
+async function loadData(context: looseObject) {
   let step: migrationStep = context.migrationPlan.steps[context.currentStepIndex]
   if (context.flags.destination === undefined) {
     context.currentStepIndex = context.currentStepIndex + 1
@@ -97,21 +102,10 @@ function loadData(context: looseObject) {
     options.csvfile = path.join(process.cwd(), 'data', `${step.name}-data.csv`)
     options.externalid = step.externalid
     options.sobjecttype = step.sobjecttype
-    sfdx.data.bulkUpsert(options)
-    .then(
-      (result:any) => {
-        context.currentStepLog = result[0]
-        context.currentStepCompleted = false
-        poll(getDataBulkStatus, 30000, 5000, context)
-        .then( (result: any) => {
-          context = result
-          context.currentStepCompleted = false;
-        })
-        .catch(
-          (result: any) => console.log(result)
-        )
-      }
-    )
+    const loadResults = await sfdx.data.bulkUpsert(options)
+    context.currentStepLog = loadResults[0]
+    const pollResult = await poll(getDataBulkStatus, 30000, 5000, context)
+    return pollResult
   }
 }
 

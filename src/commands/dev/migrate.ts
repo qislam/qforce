@@ -24,13 +24,13 @@ export default class Migrate extends Command {
     const {flags} = this.parse(Migrate)
     let planFile = ''
     if (flags.file) planFile = flags.file
-    else planFile = 'migrationPlan.ts'
+    else planFile = 'migrationPlan'
 
-    const Migration = await import(path.join(process.cwd(), planFile))
-    console.log(Migration)
+    const MigrationPlan = await import(path.join(process.cwd(), planFile))
+    console.log(MigrationPlan)
     let context: looseObject = {}
     context.flags = flags
-    context.migrationPlan = Migration.Plan
+    context.migrationPlan = MigrationPlan
     context.currentStepIndex = 0
     context.currentStepStage = 'Ready to start'
     executeMigrationSteps(context)
