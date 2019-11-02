@@ -19,7 +19,7 @@ $ npm install -g qforce
 $ qforce COMMAND
 running command...
 $ qforce (-v|--version|version)
-qforce/0.0.3 darwin-x64 node-v10.13.0
+qforce/0.0.4 darwin-x64 node-v10.13.0
 $ qforce --help [COMMAND]
 USAGE
   $ qforce COMMAND
@@ -46,11 +46,12 @@ USAGE
 
 OPTIONS
   -d, --destination=destination  destination org username or alias
+  -f, --file=file                Name of migration plan file
   -h, --help                     show CLI help
   -s, --source=source            (required) source org username or alias
 ```
 
-_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.0.3/src/commands/dev/migrate.ts)_
+_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/dev/migrate.ts)_
 
 ## `qforce dx:exe`
 
@@ -69,7 +70,7 @@ EXAMPLE
   $ q dx:exe
 ```
 
-_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.0.3/src/commands/dx/exe.ts)_
+_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/dx/exe.ts)_
 
 ## `qforce dx:ol`
 
@@ -87,7 +88,7 @@ EXAMPLE
   $ q dx:ol
 ```
 
-_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.0.3/src/commands/dx/ol.ts)_
+_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/dx/ol.ts)_
 
 ## `qforce dx:open`
 
@@ -106,7 +107,7 @@ EXAMPLE
   $ q dx:open -u uat
 ```
 
-_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.0.3/src/commands/dx/open.ts)_
+_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/dx/open.ts)_
 
 ## `qforce dx:query`
 
@@ -125,7 +126,7 @@ EXAMPLE
   $ q dx:query
 ```
 
-_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.0.3/src/commands/dx/query.ts)_
+_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/dx/query.ts)_
 
 ## `qforce hello [FILE]`
 
@@ -145,7 +146,7 @@ EXAMPLE
   hello world from ./src/hello.ts!
 ```
 
-_See code: [src/commands/hello.ts](https://github.com/qislam/qforce/blob/v0.0.3/src/commands/hello.ts)_
+_See code: [src/commands/hello.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/hello.ts)_
 
 ## `qforce help [COMMAND]`
 
