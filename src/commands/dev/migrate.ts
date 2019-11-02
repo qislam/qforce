@@ -13,16 +13,21 @@ export default class Migrate extends Command {
     help: flags.help({char: 'h'}),
     source: flags.string({char: 's', required: true, description: 'source org username or alias'}),
     destination: flags.string({char: 'd', description: 'destination org username or alias'}),
+    file: flags.string({char: 'f', description: 'Name of migration plan file'}),
   }
 
   async run() {
-    const {flags} = this.parse(Migrate)
-    const Migration = await import(path.join(process.cwd(), 'migrationPlan.ts'))
-
     if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
       fs.mkdirSync(path.join(process.cwd(), 'data'))
     }
 
+    const {flags} = this.parse(Migrate)
+    let planFile = ''
+    if (flags.file) planFile = flags.file
+    else planFile = 'migrationPlan.ts'
+
+    const Migration = await import(path.join(process.cwd(), planFile))
+    console.log(Migration)
     let context: looseObject = {}
     context.flags = flags
     context.migrationPlan = Migration.Plan

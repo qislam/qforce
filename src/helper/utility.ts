@@ -24,7 +24,6 @@ function poll(fn: any, timeout: number, interval: number, context: any) {
 }
 
 function prepJsonForCsv(line: looseObject) {
-    console.log('prep to json start')
     if (line.attributes) delete line.attributes
     for (let key of Object.keys(line)) {
       if (line[key] == 'null') line[key] = ''
@@ -32,11 +31,9 @@ function prepJsonForCsv(line: looseObject) {
         line[key] = line[key].replace(/"/g, '""')
         line[key] = '"' + line[key] + '"'
       } else if (line[key].attributes) {
-        console.log('recursive call')
         prepJsonForCsv(line[key])
       } 
     }
-    console.log('prep to json end')
     return line
   }
 
