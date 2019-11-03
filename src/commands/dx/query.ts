@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import {dxOptions} from '../../helper/interfaces'
-import {prepJsonForCsv} from '../../helper/utility'
+import {getRelativePath, prepJsonForCsv} from '../../helper/utility'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
@@ -20,21 +20,24 @@ export default class Query extends Command {
   static flags = {
     help: flags.help({char: 'h'}),
     username: flags.string({char: 'u'}),
-    verbose: flags.boolean({char: 'v'}),
+    file: flags.string({char: 'f', description: 'Relative path of query file in unix format.'}),
+    query: flags.string({char: 'q', description: 'SOQL query as string.'}),
+    result: flags.string({char: 'r', description: 'Relative path to save results of query.'})
   }
 
   async run() {
     const {flags} = this.parse(Query)
-    const queryString = fs.readFileSync(path.join(process.cwd(), 'stuff', 'query.sql'), 'utf8')
+    const filePath = flags.file || 'query.sql'
+    const resultPath = flags.result || 'query.csv'
+    const queryString = flags.query || fs.readFileSync(getRelativePath(filePath), 'utf8')
     let options: dxOptions = {}
     options.query = queryString
     if (flags.username) options.targetusername = flags.username
-    sfdx.data.soqlQuery(options)
-    .then( 
-      (result: any) => {
-        result.records.map(prepJsonForCsv)
-        fs.writeFileSync(path.join(process.cwd(), 'stuff', 'query.csv'), csvjson.toCSV(result.records, {headers: 'relative'}), {encoding: 'utf-8'})
-      }  
-    )
+    let queryResult = await sfdx.data.soqlQuery(options)
+    queryResult.records.map(prepJsonForCsv)
+    fs.writeFileSync(
+      getRelativePath(resultPath), 
+      csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
+      {encoding: 'utf-8'})
   }
 }

@@ -1,5 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import {dxOptions} from '../../helper/interfaces'
+import {getRelativePath} from '../../helper/utility'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
@@ -14,19 +15,21 @@ export default class Exe extends Command {
   static flags = {
     help: flags.help({char: 'h'}),
     username: flags.string({char: 'u'}),
-    verbose: flags.boolean({char: 'v'}),
+    file: flags.string({char: 'f', description: 'Relative path of apex file in unix format.'}),
+    result: flags.string({char: 'r', description: 'Relative path to save results.'})
   }
 
   async run() {
     const {flags} = this.parse(Exe)
+    const filePath = flags.file || 'exe.cls'
+    const resultPath = flags.result || 'exe.log'
     let options: dxOptions = {}
-    options.apexcodefile = path.join(process.cwd(), 'stuff', 'exe.cls')
+    options.apexcodefile = getRelativePath(filePath)
     if (flags.username) options.targetusername = flags.username
-    sfdx.apex.execute(options)
-    .then( 
-      (result: any) => fs.writeFileSync(path.join(process.cwd(), 'stuff', 'exe.log'), 
-      result.logs, { encoding: 'utf-8' } ) 
-    )
-    .catch( (err: any) => this.log(err))
+    let exeResults = await sfdx.apex.execute(options)
+    fs.writeFileSync(
+      getRelativePath(resultPath), 
+      exeResults.logs,
+      {encoding: 'utf-8'})
   }
 }

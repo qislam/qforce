@@ -49,7 +49,11 @@ export default class Migrate extends Command {
         options.externalid = step.externalid
         options.sobjecttype = step.sobjecttype
         const loadResults: any = await sfdx.data.bulkUpsert(options)
-        const pollResult: any = await poll(getDataBulkStatus, 30000, 5000, loadResults)
+        options = {}
+        options.targetusername = flags.destination
+        options.jobid = loadResults[0].jobId
+        options.batchid = loadResults[0].id
+        const pollResult: any = await poll(getDataBulkStatus, 30000, 5000, options)
         this.log(pollResult)
       }
     }
