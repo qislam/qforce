@@ -1,5 +1,5 @@
 import {Command, flags} from '@oclif/command'
-import {executeMigrationSteps} from '../../helper/migrateHelper'
+import {getDataBulkStatus, getRelativePath, prepJsonForCsv, poll} from '../../helper/utility'
 import {dxOptions, looseObject, migrationStep} from '../../helper/interfaces'
 const sfdx = require('sfdx-node')
 const path = require('path')
@@ -13,26 +13,45 @@ export default class Migrate extends Command {
     help: flags.help({char: 'h'}),
     source: flags.string({char: 's', required: true, description: 'source org username or alias'}),
     destination: flags.string({char: 'd', description: 'destination org username or alias'}),
-    file: flags.string({char: 'f', description: 'Name of migration plan file'}),
+    file: flags.string({char: 'f', description: 'Path of migration plan file. Must be relative to cwd and in unix format.'}),
   }
 
   async run() {
     if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
       fs.mkdirSync(path.join(process.cwd(), 'data'))
     }
-
     const {flags} = this.parse(Migrate)
-    let planFile = ''
-    if (flags.file) planFile = flags.file
-    else planFile = 'migrationPlan'
+    let file = flags.file || 'migrationPlan.js'
 
-    const MigrationPlan = await import(path.join(process.cwd(), planFile))
-    console.log(MigrationPlan)
-    let context: looseObject = {}
-    context.flags = flags
-    context.migrationPlan = MigrationPlan
-    context.currentStepIndex = 0
-    context.currentStepStage = 'Ready to start'
-    executeMigrationSteps(context)
+    const MigrationPlan = await import(getRelativePath(file))
+    
+    for (let i = 0; i < MigrationPlan.steps.length; i++) {
+      let step: migrationStep = MigrationPlan.steps[i]
+      this.log(i + ' - Starting step ' + step.name)
+      if (step.query) {
+        let options: dxOptions = {}
+        options.query = step.query
+        options.targetusername = flags.source
+        let queryResult = await sfdx.data.soqlQuery(options)
+        if (step.transform) queryResult.records.map(step.transform.bind(step))
+        // remove attributes property and csv cleanup
+        queryResult.records.map(prepJsonForCsv)
+        
+        fs.writeFileSync(
+          path.join(process.cwd(), 'data', `${step.name}-data.csv`), 
+          csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
+          {encoding: 'utf-8'})
+      }
+      if (flags.destination) {
+        let options: dxOptions = {}
+        options.targetusername = flags.destination
+        options.csvfile = path.join(process.cwd(), 'data', `${step.name}-data.csv`)
+        options.externalid = step.externalid
+        options.sobjecttype = step.sobjecttype
+        const loadResults: any = await sfdx.data.bulkUpsert(options)
+        const pollResult: any = await poll(getDataBulkStatus, 30000, 5000, loadResults)
+        this.log(pollResult)
+      }
+    }
   }
 }

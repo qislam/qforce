@@ -1,4 +1,6 @@
-import {looseObject} from './interfaces'
+import {dxOptions, looseObject} from './interfaces'
+const path = require('path')
+const sfdx = require('sfdx-node')
 
 function poll(fn: any, timeout: number, interval: number, context: any) {
     let endTime = Number(new Date()) + (timeout || 2000);
@@ -23,18 +25,32 @@ function poll(fn: any, timeout: number, interval: number, context: any) {
     return new Promise(checkCondition);
 }
 
-function prepJsonForCsv(line: looseObject) {
-    if (line.attributes) delete line.attributes
-    for (let key of Object.keys(line)) {
-      if (line[key] == 'null') line[key] = ''
-      if (typeof line[key] === 'string') {
-        line[key] = line[key].replace(/"/g, '""')
-        line[key] = '"' + line[key] + '"'
-      } else if (line[key].attributes) {
-        prepJsonForCsv(line[key])
-      } 
+async function getDataBulkStatus(options: dxOptions) {
+    let statusResults = await sfdx.data.bulkStatus(options)
+    if (statusResults[0].state == 'Completed') {
+      return statusResults[0]
+    } else {
+      return null
     }
-    return line
-  }
+}
 
-export {poll, prepJsonForCsv}
+function prepJsonForCsv(line: looseObject) {
+  if (line.attributes) delete line.attributes
+  for (let key of Object.keys(line)) {
+    if (line[key] == 'null') line[key] = ''
+    if (typeof line[key] === 'string') {
+      line[key] = line[key].replace(/"/g, '""')
+      line[key] = '"' + line[key] + '"'
+    } else if (line[key].attributes) {
+      prepJsonForCsv(line[key])
+    } 
+  }
+  return line
+}
+
+function getRelativePath(rawPath: string) {
+  let relativePath:string = path.join(process.cwd(), ...rawPath.split('/'))
+  return relativePath
+}
+
+export {getDataBulkStatus, getRelativePath, poll, prepJsonForCsv}
