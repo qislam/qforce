@@ -19,7 +19,7 @@ $ npm install -g qforce
 $ qforce COMMAND
 running command...
 $ qforce (-v|--version|version)
-qforce/0.0.4 darwin-x64 node-v10.13.0
+qforce/0.0.5 darwin-x64 node-v10.13.0
 $ qforce --help [COMMAND]
 USAGE
   $ qforce COMMAND
@@ -28,16 +28,12 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-- [qforce](#qforce)
-- [Usage](#usage)
-- [Commands](#commands)
-  - [`qforce dev:migrate`](#qforce-devmigrate)
-  - [`qforce dx:exe`](#qforce-dxexe)
-  - [`qforce dx:ol`](#qforce-dxol)
-  - [`qforce dx:open`](#qforce-dxopen)
-  - [`qforce dx:query`](#qforce-dxquery)
-  - [`qforce hello [FILE]`](#qforce-hello-file)
-  - [`qforce help [COMMAND]`](#qforce-help-command)
+* [`qforce dev:migrate`](#qforce-devmigrate)
+* [`qforce dx:exe`](#qforce-dxexe)
+* [`qforce dx:ol`](#qforce-dxol)
+* [`qforce dx:open`](#qforce-dxopen)
+* [`qforce dx:query`](#qforce-dxquery)
+* [`qforce help [COMMAND]`](#qforce-help-command)
 
 ## `qforce dev:migrate`
 
@@ -49,12 +45,12 @@ USAGE
 
 OPTIONS
   -d, --destination=destination  destination org username or alias
-  -f, --file=file                Name of migration plan file
+  -f, --file=file                Path of migration plan file. Must be relative to cwd and in unix format.
   -h, --help                     show CLI help
   -s, --source=source            (required) source org username or alias
 ```
 
-_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/dev/migrate.ts)_
+_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.0.5/src/commands/dev/migrate.ts)_
 
 ## `qforce dx:exe`
 
@@ -65,15 +61,16 @@ USAGE
   $ qforce dx:exe
 
 OPTIONS
+  -f, --file=file          Relative path of apex file in unix format.
   -h, --help               show CLI help
+  -r, --result=result      Relative path to save results.
   -u, --username=username
-  -v, --verbose
 
 EXAMPLE
   $ q dx:exe
 ```
 
-_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/dx/exe.ts)_
+_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.0.5/src/commands/dx/exe.ts)_
 
 ## `qforce dx:ol`
 
@@ -91,7 +88,7 @@ EXAMPLE
   $ q dx:ol
 ```
 
-_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/dx/ol.ts)_
+_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.0.5/src/commands/dx/ol.ts)_
 
 ## `qforce dx:open`
 
@@ -110,7 +107,7 @@ EXAMPLE
   $ q dx:open -u uat
 ```
 
-_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/dx/open.ts)_
+_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.0.5/src/commands/dx/open.ts)_
 
 ## `qforce dx:query`
 
@@ -121,35 +118,17 @@ USAGE
   $ qforce dx:query
 
 OPTIONS
+  -f, --file=file          Relative path of query file in unix format.
   -h, --help               show CLI help
+  -q, --query=query        SOQL query as string.
+  -r, --result=result      Relative path to save results of query.
   -u, --username=username
-  -v, --verbose
 
 EXAMPLE
   $ q dx:query
 ```
 
-_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/dx/query.ts)_
-
-## `qforce hello [FILE]`
-
-describe the command here
-
-```
-USAGE
-  $ qforce hello [FILE]
-
-OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
-
-EXAMPLE
-  $ q hello
-  hello world from ./src/hello.ts!
-```
-
-_See code: [src/commands/hello.ts](https://github.com/qislam/qforce/blob/v0.0.4/src/commands/hello.ts)_
+_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.0.5/src/commands/dx/query.ts)_
 
 ## `qforce help [COMMAND]`
 
