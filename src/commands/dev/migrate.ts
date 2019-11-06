@@ -1,5 +1,5 @@
 import {Command, flags} from '@oclif/command'
-import {getDataBulkStatus, getRelativePath, prepJsonForCsv, poll} from '../../helper/utility'
+import {getRelativePath, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
 import {dxOptions, looseObject, migrationStep} from '../../helper/interfaces'
 const sfdx = require('sfdx-node')
 const path = require('path')
@@ -24,15 +24,26 @@ export default class Migrate extends Command {
     let file = flags.file || 'migrationPlan.js'
 
     const MigrationPlan = await import(getRelativePath(file))
-    
-    for (let i = 0; i < MigrationPlan.steps.length; i++) {
+    const startIndex = MigrationPlan.startIndex || 0
+    const stopIndex = MigrationPlan.stopIndex || MigrationPlan.steps.length
+    for (let i = startIndex; i < stopIndex; i++) {
       let step: migrationStep = MigrationPlan.steps[i]
-      this.log(i + ' - Starting step ' + step.name)
+      if (step.skip) {
+        this.log(i + ' - Step ' + step.name + ' - Skipped')
+        continue;
+      }
+      this.log(i + ' - Step ' + step.name + ' - Started')
       if (step.query) {
         let options: dxOptions = {}
         options.query = step.query
         options.targetusername = flags.source
-        let queryResult = await sfdx.data.soqlQuery(options)
+        let queryResult: any
+        try {
+          queryResult= await sfdx.data.soqlQuery(options)
+        } catch(err) {
+          this.log('Error in querying the data: ' + JSON.stringify(err))
+          break
+        }
         if (step.transform) queryResult.records.map(step.transform.bind(step))
         // remove attributes property and csv cleanup
         queryResult.records.map(prepJsonForCsv)
@@ -40,7 +51,9 @@ export default class Migrate extends Command {
         fs.writeFileSync(
           path.join(process.cwd(), 'data', `${step.name}-data.csv`), 
           csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
-          {encoding: 'utf-8'})
+          {encoding: 'utf-8'}
+        )
+        this.log(i + ' - Step ' + step.name + ' - Query results saved.')
       }
       if (flags.destination) {
         let options: dxOptions = {}
@@ -48,13 +61,29 @@ export default class Migrate extends Command {
         options.csvfile = path.join(process.cwd(), 'data', `${step.name}-data.csv`)
         options.externalid = step.externalid
         options.sobjecttype = step.sobjecttype
-        const loadResults: any = await sfdx.data.bulkUpsert(options)
+        let loadResults: any
+        try {
+          loadResults= await sfdx.data.bulkUpsert(options)
+        } catch(err) {
+          this.log('Error uploading data: ' + JSON.stringify(err))
+          break
+        }
         options = {}
         options.targetusername = flags.destination
         options.jobid = loadResults[0].jobId
         options.batchid = loadResults[0].id
-        const pollResult: any = await poll(getDataBulkStatus, 30000, 5000, options)
-        this.log(pollResult)
+        let pollResults: any
+        try {
+          pollResults = await pollBulkStatus(options, 300000, 10000)
+        } catch(err) {
+          this.log('Error in getting bulk status: ' + err)
+          break
+        }
+        if(pollResults && pollResults.numberRecordsFailed > 0) {
+          this.log('Some records did not get uploaded:\n' + JSON.stringify(pollResults))
+          break
+        }
+        this.log(i + ' - Step ' + step.name + ' - Data uploaded.')
       }
     }
   }

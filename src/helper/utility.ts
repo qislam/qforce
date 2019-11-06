@@ -9,7 +9,8 @@ function poll(fn: any, timeout: number, interval: number, context: any) {
     var checkCondition = function(resolve: any, reject: any) {
         // If the condition is met, we're done! 
         let result = fn(context);
-        if(result) {
+        console.log(result.state)
+        if(result.state == 'Completed') {
             resolve(result);
         }
         // If the condition isn't met but the timeout hasn't elapsed, go again
@@ -25,13 +26,26 @@ function poll(fn: any, timeout: number, interval: number, context: any) {
     return new Promise(checkCondition);
 }
 
-async function getDataBulkStatus(options: dxOptions) {
-    let statusResults = await sfdx.data.bulkStatus(options)
-    if (statusResults[0].state == 'Completed') {
-      return statusResults[0]
-    } else {
-      return null
+function pollBulkStatus(options: dxOptions, timeout: number, interval: number) {
+  let endTime = Number(new Date()) + (timeout || 300000);
+  interval = interval || 30000;
+
+  async function checkResults(resolve: any, reject: any) {
+    let statusResults = await sfdx.data.bulkStatus(options) 
+    if(statusResults[0].state == 'Completed') {
+        resolve(statusResults[0]);
     }
+    // If the condition isn't met but the timeout hasn't elapsed, go again
+    else if (Number(new Date()) < endTime) {
+        setTimeout(checkResults, interval, resolve, reject);
+    }
+    // Didn't match and too much time, reject!
+    else {
+        reject(new Error('timed out for ' + ': ' + arguments));
+    }
+  };
+
+  return new Promise(checkResults);
 }
 
 function prepJsonForCsv(line: looseObject) {
@@ -53,4 +67,4 @@ function getRelativePath(rawPath: string) {
   return relativePath
 }
 
-export {getDataBulkStatus, getRelativePath, poll, prepJsonForCsv}
+export {getRelativePath, poll, pollBulkStatus, prepJsonForCsv}
