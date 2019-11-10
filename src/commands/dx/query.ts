@@ -1,4 +1,5 @@
 import {Command, flags} from '@oclif/command'
+import cli from 'cli-ux'
 import {dxOptions} from '../../helper/interfaces'
 import {getRelativePath, prepJsonForCsv} from '../../helper/utility'
 const sfdx = require('sfdx-node')
@@ -12,6 +13,7 @@ function toCsv(items: any) {
 
 export default class Query extends Command {
   static description = 'Execute anonymous apex.'
+  static aliases = ['query', 'q']
 
   static examples = [
     `$ q dx:query`,
@@ -26,18 +28,27 @@ export default class Query extends Command {
   }
 
   async run() {
+    cli.action.start('Querying data')
     const {flags} = this.parse(Query)
-    const filePath = flags.file || 'query.sql'
-    const resultPath = flags.result || 'query.csv'
+    let settings
+    if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
+      settings = JSON.parse(
+        fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
+      )
+    }
+    const filePath = flags.file || getRelativePath(settings.queryFilePath) || 'query.soql'
+    const resultPath = flags.result || getRelativePath(settings.queryResultsPath) || 'query.csv'
     const queryString = flags.query || fs.readFileSync(getRelativePath(filePath), 'utf8')
+    const targetusername = flags.username || settings.exeTargetusername || settings.targetusername
     let options: dxOptions = {}
     options.query = queryString
-    if (flags.username) options.targetusername = flags.username
+    if (targetusername) options.targetusername = targetusername
     let queryResult = await sfdx.data.soqlQuery(options)
     queryResult.records.map(prepJsonForCsv)
     fs.writeFileSync(
       getRelativePath(resultPath), 
       csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
       {encoding: 'utf-8'})
+    cli.action.stop()
   }
 }

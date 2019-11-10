@@ -1,4 +1,5 @@
 import {Command, flags} from '@oclif/command'
+import cli from 'cli-ux'
 import {dxOptions} from '../../helper/interfaces'
 import {getRelativePath} from '../../helper/utility'
 const sfdx = require('sfdx-node')
@@ -20,16 +21,25 @@ export default class Exe extends Command {
   }
 
   async run() {
+    cli.action.start('Executing anonymous script')
     const {flags} = this.parse(Exe)
-    const filePath = flags.file || 'exe.cls'
-    const resultPath = flags.result || 'exe.log'
+    let settings
+    if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
+      settings = JSON.parse(
+        fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
+      )
+    }
+    const filePath = flags.file || getRelativePath(settings.exeFilePath) || 'exe.cls'
+    const resultPath = flags.result || getRelativePath(settings.exeResultsPath) || 'exe.log'
+    const targetusername = flags.username || settings.exeTargetusername || settings.targetusername
     let options: dxOptions = {}
     options.apexcodefile = getRelativePath(filePath)
-    if (flags.username) options.targetusername = flags.username
+    if (targetusername) options.targetusername = targetusername
     let exeResults = await sfdx.apex.execute(options)
     fs.writeFileSync(
       getRelativePath(resultPath), 
       exeResults.logs,
       {encoding: 'utf-8'})
+    cli.action.stop()
   }
 }

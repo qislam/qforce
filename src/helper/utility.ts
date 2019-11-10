@@ -26,8 +26,8 @@ function poll(fn: any, timeout: number, interval: number, context: any) {
     return new Promise(checkCondition);
 }
 
-function pollBulkStatus(options: dxOptions, timeout: number, interval: number) {
-  let endTime = Number(new Date()) + (timeout || 300000);
+function pollBulkStatus(options: dxOptions, retries: number, interval: number) {
+  let endTime = Number(new Date()) + (retries * interval || 150000);
   interval = interval || 30000;
 
   async function checkResults(resolve: any, reject: any) {
@@ -41,7 +41,7 @@ function pollBulkStatus(options: dxOptions, timeout: number, interval: number) {
     }
     // Didn't match and too much time, reject!
     else {
-        reject(new Error('timed out for ' + ': ' + arguments));
+        reject(new Error('Timed out:\n' + JSON.stringify(statusResults[0])));
     }
   };
 
@@ -63,8 +63,13 @@ function prepJsonForCsv(line: looseObject) {
 }
 
 function getRelativePath(rawPath: string) {
+  let relativePath:string = path.join(...rawPath.trim().split('/'))
+  return relativePath
+}
+
+function getAbsolutePath(rawPath: string) {
   let relativePath:string = path.join(process.cwd(), ...rawPath.trim().split('/'))
   return relativePath
 }
 
-export {getRelativePath, poll, pollBulkStatus, prepJsonForCsv}
+export {getAbsolutePath, getRelativePath, poll, pollBulkStatus, prepJsonForCsv}

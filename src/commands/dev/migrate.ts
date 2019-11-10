@@ -1,5 +1,6 @@
 import {Command, flags} from '@oclif/command'
-import {getRelativePath, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
+import cli from 'cli-ux'
+import {getAbsolutePath, getRelativePath, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
 import {dxOptions, looseObject, migrationStep} from '../../helper/interfaces'
 const sfdx = require('sfdx-node')
 const path = require('path')
@@ -8,10 +9,11 @@ const csvjson = require('csvjson')
 
 export default class Migrate extends Command {
   static description = 'Migrate data from one org to another based on a migration plan.'
+  static aliases = ['migrate', 'm']
 
   static flags = {
     help: flags.help({char: 'h'}),
-    source: flags.string({char: 's', required: true, description: 'source org username or alias'}),
+    source: flags.string({char: 's', description: 'source org username or alias'}),
     destination: flags.string({char: 'd', description: 'destination org username or alias'}),
     file: flags.string({char: 'f', description: 'Path of migration plan file. Must be relative to cwd and in unix format.'}),
   }
@@ -20,10 +22,16 @@ export default class Migrate extends Command {
     if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
       fs.mkdirSync(path.join(process.cwd(), 'data'))
     }
+    let settings
+    if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
+      settings = JSON.parse(
+        fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
+      )
+    }
     const {flags} = this.parse(Migrate)
     let file = flags.file || 'migrationPlan.js'
 
-    const MigrationPlan = await import(getRelativePath(file))
+    const MigrationPlan = await import(getAbsolutePath(file))
     const startIndex = MigrationPlan.startIndex || 0
     const stopIndex = MigrationPlan.stopIndex || MigrationPlan.steps.length
     for (let i = startIndex; i < stopIndex; i++) {
@@ -33,16 +41,19 @@ export default class Migrate extends Command {
         continue;
       }
       this.log(i + ' - Step ' + step.name + ' - Started')
-      if (step.query) {
+      if (step.query && (flags.source || MigrationPlan.source)) {
+        cli.action.start(i + ' - Step ' + step.name + ' querying data')
         let options: dxOptions = {}
         options.query = step.query
-        options.targetusername = flags.source
+        options.targetusername = flags.source || MigrationPlan.source
         let queryResult: any
         try {
           queryResult= await sfdx.data.soqlQuery(options)
         } catch(err) {
-          this.log('Error in querying the data: ' + JSON.stringify(err))
-          break
+          cli.action.stop('Error in querying the data: ' + JSON.stringify(err))
+          //this.log('Error in querying the data: ' + JSON.stringify(err))
+          if(settings.ignoreError) continue
+          else break
         }
         if (step.transform) queryResult.records.map(step.transform.bind(step))
         // remove attributes property and csv cleanup
@@ -53,11 +64,15 @@ export default class Migrate extends Command {
           csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
           {encoding: 'utf-8'}
         )
-        this.log(i + ' - Step ' + step.name + ' - Query results saved.')
+        cli.action.stop()
+      } else {
+        this.log('Query and username missing.')
+        break
       }
-      if (flags.destination) {
+      if (flags.destination || MigrationPlan.destination) {
+        cli.action.start(i + ' - Step ' + step.name + ' uploading data')
         let options: dxOptions = {}
-        options.targetusername = flags.destination
+        options.targetusername = flags.destination || MigrationPlan.destination
         options.csvfile = path.join(process.cwd(), 'data', `${step.name}-data.csv`)
         options.externalid = step.externalid
         options.sobjecttype = step.sobjecttype
@@ -65,8 +80,10 @@ export default class Migrate extends Command {
         try {
           loadResults= await sfdx.data.bulkUpsert(options)
         } catch(err) {
+          cli.action.stop()
           this.log('Error uploading data: ' + JSON.stringify(err))
-          break
+          if(MigrationPlan.ignoreError) continue
+          else break
         }
         options = {}
         options.targetusername = flags.destination
@@ -74,16 +91,21 @@ export default class Migrate extends Command {
         options.batchid = loadResults[0].id
         let pollResults: any
         try {
-          pollResults = await pollBulkStatus(options, 300000, 10000)
+          pollResults = await pollBulkStatus(options
+                                            , settings.bulkStatusRetries
+                                            , settings.bulkStatusInterval)
         } catch(err) {
+          cli.action.stop()
           this.log('Error in getting bulk status: ' + err)
-          break
+          if(MigrationPlan.ignoreError) continue
+          else break
         }
         if(pollResults && pollResults.numberRecordsFailed > 0) {
+          cli.action.stop()
           this.log('Some records did not get uploaded:\n' + JSON.stringify(pollResults))
-          break
+          if(MigrationPlan.ignoreError) continue
+          else break
         }
-        this.log(i + ' - Step ' + step.name + ' - Data uploaded.')
       }
     }
   }
