@@ -1,25 +1,30 @@
 import {Command, flags} from '@oclif/command'
+import cli from 'cli-ux'
+const path = require('path')
+const fs = require('fs')
 
 export default class DevPatch extends Command {
   static description = 'describe the command here'
+  static aliases = ['patch','dev:patch']
 
   static flags = {
     help: flags.help({char: 'h'}),
-    // flag with a value (-n, --name=VALUE)
-    name: flags.string({char: 'n', description: 'name to print'}),
-    // flag with no value (-f, --force)
     force: flags.boolean({char: 'f'}),
   }
 
-  static args = [{name: 'file'}]
+  static args = [{name: 'branchA'}, {name: 'branchB'}]
 
   async run() {
+    cli.action.start('Processing patch')
     const {args, flags} = this.parse(DevPatch)
-
-    const name = flags.name || 'world'
-    this.log(`hello ${name} from /Users/qamarislam/Workspace/qforce/src/commands/dev/patch.ts`)
-    if (args.file && flags.force) {
-      this.log(`you input --force and --file: ${args.file}`)
+    let settings
+    if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
+      settings = JSON.parse(
+        fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
+      )
     }
+    const branchA = args.branchA
+    const branchB = args.branchB || settings.developBranch
+    
   }
 }
