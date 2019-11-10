@@ -29,6 +29,7 @@ USAGE
 # Commands
 <!-- commands -->
 * [`qforce dev:migrate`](#qforce-devmigrate)
+* [`qforce dev:patch [FILE]`](#qforce-devpatch-file)
 * [`qforce dx:exe`](#qforce-dxexe)
 * [`qforce dx:ol`](#qforce-dxol)
 * [`qforce dx:open`](#qforce-dxopen)
@@ -47,10 +48,30 @@ OPTIONS
   -d, --destination=destination  destination org username or alias
   -f, --file=file                Path of migration plan file. Must be relative to cwd and in unix format.
   -h, --help                     show CLI help
-  -s, --source=source            (required) source org username or alias
+  -s, --source=source            source org username or alias
+
+ALIASES
+  $ qforce migrate
+  $ qforce m
 ```
 
 _See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.0.6/src/commands/dev/migrate.ts)_
+
+## `qforce dev:patch [FILE]`
+
+describe the command here
+
+```
+USAGE
+  $ qforce dev:patch [FILE]
+
+OPTIONS
+  -f, --force
+  -h, --help       show CLI help
+  -n, --name=name  name to print
+```
+
+_See code: [src/commands/dev/patch.ts](https://github.com/qislam/qforce/blob/v0.0.6/src/commands/dev/patch.ts)_
 
 ## `qforce dx:exe`
 
@@ -123,6 +144,10 @@ OPTIONS
   -q, --query=query        SOQL query as string.
   -r, --result=result      Relative path to save results of query.
   -u, --username=username
+
+ALIASES
+  $ qforce query
+  $ qforce q
 
 EXAMPLE
   $ q dx:query
