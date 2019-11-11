@@ -7,3 +7,5 @@
 /yarn.lock
 node_modules
 .editorconfig
+/.qforce
+/stuff
