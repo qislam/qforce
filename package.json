@@ -42,7 +42,12 @@
   ],
   "homepage": "https://github.com/qislam/qforce",
   "keywords": [
-    "oclif"
+    "oclif",
+    "force",
+    "sfdx",
+    "salesforce",
+    "cli",
+    "sfdc"
   ],
   "license": "MIT",
   "main": "lib/index.js",
