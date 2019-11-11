@@ -17,7 +17,7 @@ export default class DevPatch extends Command {
   static args = [{name: 'branchA'}, {name: 'branchB'}]
 
   async run() {
-    cli.action.start('Processing patch')
+    cli.action.start('Preparing patch')
     const {args, flags} = this.parse(DevPatch)
     let settings
     if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
@@ -27,7 +27,7 @@ export default class DevPatch extends Command {
     }
     const branchA = args.branchA
     const branchB = args.branchB || settings.developBranch
-    const patchPath = settings.patchPath + '/' + branchA.replace(/\//g, '-')
+    const patchPath = settings.patchPath + '/' + branchA.replace(/\//g, '-') + '.patch'
     
     const mergeBase = await execa('git', ['merge-base', branchA, branchB])
     const baseCommit = mergeBase.stdout
