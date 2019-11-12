@@ -19,7 +19,7 @@ $ npm install -g qforce
 $ qforce COMMAND
 running command...
 $ qforce (-v|--version|version)
-qforce/0.0.7 darwin-x64 node-v10.13.0
+qforce/0.0.8 darwin-x64 node-v10.13.0
 $ qforce --help [COMMAND]
 USAGE
   $ qforce COMMAND
@@ -46,12 +46,23 @@ USAGE
   $ qforce dev:config [FILE]
 
 OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
+  -g, --global                             To set or retrieve setting from global.
+  -h, --help                               show CLI help
+  -u, --targetusername=targetusername      Set or retrieve targetusername.
+  --bulkStatusInterval=bulkStatusInterval  Interval in milliseconds for polling bluk job status.
+  --bulkStatusRetries=bulkStatusRetries    Number of retries to poll status of bulk job.
+  --exeFilePath=exeFilePath                Path to file to execute for exe command.
+  --exeResultsPath=exeResultsPath          Path to save log of exe command execution.
+  --init                                   Initiate qforce settings.
+  --queryFilePath=queryFilePath            Path of query file to use with query command.
+  --queryResultsPath=queryResultsPath      Path to save results of query command.
+
+ALIASES
+  $ qforce config
+  $ qforce dev:config
 ```
 
-_See code: [src/commands/dev/config.ts](https://github.com/qislam/qforce/blob/v0.0.7/src/commands/dev/config.ts)_
+_See code: [src/commands/dev/config.ts](https://github.com/qislam/qforce/blob/v0.0.8/src/commands/dev/config.ts)_
 
 ## `qforce dev:migrate`
 
@@ -72,7 +83,7 @@ ALIASES
   $ qforce m
 ```
 
-_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.0.7/src/commands/dev/migrate.ts)_
+_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.0.8/src/commands/dev/migrate.ts)_
 
 ## `qforce dev:patch [BRANCHA] [BRANCHB]`
 
@@ -91,7 +102,7 @@ ALIASES
   $ qforce dev:patch
 ```
 
-_See code: [src/commands/dev/patch.ts](https://github.com/qislam/qforce/blob/v0.0.7/src/commands/dev/patch.ts)_
+_See code: [src/commands/dev/patch.ts](https://github.com/qislam/qforce/blob/v0.0.8/src/commands/dev/patch.ts)_
 
 ## `qforce dx:exe`
 
@@ -107,11 +118,15 @@ OPTIONS
   -r, --result=result      Relative path to save results.
   -u, --username=username
 
+ALIASES
+  $ qforce exe
+  $ qforce dx:exe
+
 EXAMPLE
   $ q dx:exe
 ```
 
-_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.0.7/src/commands/dx/exe.ts)_
+_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.0.8/src/commands/dx/exe.ts)_
 
 ## `qforce dx:ol`
 
@@ -129,7 +144,7 @@ EXAMPLE
   $ q dx:ol
 ```
 
-_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.0.7/src/commands/dx/ol.ts)_
+_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.0.8/src/commands/dx/ol.ts)_
 
 ## `qforce dx:open`
 
@@ -148,7 +163,7 @@ EXAMPLE
   $ q dx:open -u uat
 ```
 
-_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.0.7/src/commands/dx/open.ts)_
+_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.0.8/src/commands/dx/open.ts)_
 
 ## `qforce dx:query`
 
@@ -173,7 +188,7 @@ EXAMPLE
   $ q dx:query
 ```
 
-_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.0.7/src/commands/dx/query.ts)_
+_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.0.8/src/commands/dx/query.ts)_
 
 ## `qforce help [COMMAND]`
 
