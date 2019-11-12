@@ -41,7 +41,7 @@ function pollBulkStatus(options: dxOptions, retries: number, interval: number) {
     }
     // Didn't match and too much time, reject!
     else {
-        reject(new Error('Timed out:\n' + JSON.stringify(statusResults[0])));
+        reject(new Error('Timed out:\n' + JSON.stringify(statusResults[0], null, 2)));
     }
   };
 

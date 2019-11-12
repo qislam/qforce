@@ -23,9 +23,9 @@ export default class Migrate extends Command {
       fs.mkdirSync(path.join(process.cwd(), 'data'))
     }
     let settings
-    if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
+    if (fs.existsSync(getAbsolutePath('.qforce/settings.json'))) {
       settings = JSON.parse(
-        fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
+        fs.readFileSync(getAbsolutePath('.qforce/settings.json'))
       )
     }
     const {flags} = this.parse(Migrate)
@@ -50,7 +50,7 @@ export default class Migrate extends Command {
         try {
           queryResult= await sfdx.data.soqlQuery(options)
         } catch(err) {
-          cli.action.stop('Error in querying the data: ' + JSON.stringify(err))
+          cli.action.stop('Error in querying the data: ' + JSON.stringify(err, null, 2))
           //this.log('Error in querying the data: ' + JSON.stringify(err))
           if(settings.ignoreError) continue
           else break
@@ -74,14 +74,14 @@ export default class Migrate extends Command {
         let options: dxOptions = {}
         options.targetusername = flags.destination || MigrationPlan.destination
         options.csvfile = path.join(process.cwd(), 'data', `${step.name}-data.csv`)
-        options.externalid = step.externalid
+        if(step.externalid) options.externalid = step.externalid
         options.sobjecttype = step.sobjecttype
         let loadResults: any
         try {
           loadResults= await sfdx.data.bulkUpsert(options)
         } catch(err) {
           cli.action.stop()
-          this.log('Error uploading data: ' + JSON.stringify(err))
+          this.log('Error uploading data: ' + JSON.stringify(err, null, 2))
           if(MigrationPlan.ignoreError) continue
           else break
         }
@@ -92,8 +92,8 @@ export default class Migrate extends Command {
         let pollResults: any
         try {
           pollResults = await pollBulkStatus(options
-                                            , settings.bulkStatusRetries
-                                            , settings.bulkStatusInterval)
+                                            , step.bulkStatusRetries
+                                            , step.bulkStatusInterval)
         } catch(err) {
           cli.action.stop()
           this.log('Error in getting bulk status: ' + err)

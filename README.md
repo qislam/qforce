@@ -28,6 +28,7 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
+* [`qforce dev:config [FILE]`](#qforce-devconfig-file)
 * [`qforce dev:migrate`](#qforce-devmigrate)
 * [`qforce dev:patch [BRANCHA] [BRANCHB]`](#qforce-devpatch-brancha-branchb)
 * [`qforce dx:exe`](#qforce-dxexe)
@@ -35,6 +36,22 @@ USAGE
 * [`qforce dx:open`](#qforce-dxopen)
 * [`qforce dx:query`](#qforce-dxquery)
 * [`qforce help [COMMAND]`](#qforce-help-command)
+
+## `qforce dev:config [FILE]`
+
+describe the command here
+
+```
+USAGE
+  $ qforce dev:config [FILE]
+
+OPTIONS
+  -f, --force
+  -h, --help       show CLI help
+  -n, --name=name  name to print
+```
+
+_See code: [src/commands/dev/config.ts](https://github.com/qislam/qforce/blob/v0.0.7/src/commands/dev/config.ts)_
 
 ## `qforce dev:migrate`
 

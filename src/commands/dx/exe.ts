@@ -8,6 +8,7 @@ const fs = require('fs')
 
 export default class Exe extends Command {
   static description = 'Execute anonymous apex.'
+  static aliases = ['exe', 'dx:exe']
 
   static examples = [
     `$ q dx:exe`,
