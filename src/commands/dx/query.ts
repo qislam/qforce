@@ -36,8 +36,8 @@ export default class Query extends Command {
         fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
       )
     }
-    const filePath = flags.file || getRelativePath(settings.queryFilePath) || 'query.soql'
-    const resultPath = flags.result || getRelativePath(settings.queryResultsPath) || 'query.csv'
+    const filePath = flags.file || settings.queryFilePath || 'query.soql'
+    const resultPath = flags.result || settings.queryResultsPath || 'query.csv'
     const queryString = flags.query || fs.readFileSync(getRelativePath(filePath), 'utf8')
     const targetusername = flags.username || settings.exeTargetusername || settings.targetusername
     let options: dxOptions = {}
