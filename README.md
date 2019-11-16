@@ -31,6 +31,7 @@ USAGE
 * [`qforce dev:config [FILE]`](#qforce-devconfig-file)
 * [`qforce dev:migrate`](#qforce-devmigrate)
 * [`qforce dev:patch [BRANCHA] [BRANCHB]`](#qforce-devpatch-brancha-branchb)
+* [`qforce dx:describe [FILE]`](#qforce-dxdescribe-file)
 * [`qforce dx:exe`](#qforce-dxexe)
 * [`qforce dx:ol`](#qforce-dxol)
 * [`qforce dx:open`](#qforce-dxopen)
@@ -104,6 +105,22 @@ ALIASES
 
 _See code: [src/commands/dev/patch.ts](https://github.com/qislam/qforce/blob/v0.0.9/src/commands/dev/patch.ts)_
 
+## `qforce dx:describe [FILE]`
+
+describe the command here
+
+```
+USAGE
+  $ qforce dx:describe [FILE]
+
+OPTIONS
+  -f, --force
+  -h, --help       show CLI help
+  -n, --name=name  name to print
+```
+
+_See code: [src/commands/dx/describe.ts](https://github.com/qislam/qforce/blob/v0.0.9/src/commands/dx/describe.ts)_
+
 ## `qforce dx:exe`
 
 Execute anonymous apex.
@@ -159,6 +176,11 @@ OPTIONS
   -p, --path=path
   -u, --username=username
 
+ALIASES
+  $ qforce open
+  $ qforce dx:open
+  $ qforce o
+
 EXAMPLE
   $ q dx:open -u uat
 ```
@@ -167,7 +189,7 @@ _See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.0.
 
 ## `qforce dx:query`
 
-Execute anonymous apex.
+Run a SOQL and save results to csv.
 
 ```
 USAGE
@@ -183,6 +205,7 @@ OPTIONS
 ALIASES
   $ qforce query
   $ qforce q
+  $ qforce dx:query
 
 EXAMPLE
   $ q dx:query
