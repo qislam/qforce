@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
-import {getAbsolutePath, getRelativePath, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
+import {getAbsolutePath, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
 import {dxOptions, looseObject, migrationStep} from '../../helper/interfaces'
 const sfdx = require('sfdx-node')
 const path = require('path')

@@ -1,7 +1,7 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
 import {dxOptions} from '../../helper/interfaces'
-import {getRelativePath, getAbsolutePath} from '../../helper/utility'
+import {getAbsolutePath} from '../../helper/utility'
 const path = require('path')
 const fs = require('fs')
 const sfdx = require('sfdx-node');

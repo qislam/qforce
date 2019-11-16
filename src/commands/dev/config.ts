@@ -1,7 +1,7 @@
 import {Command, flags} from '@oclif/command'
 import { domainToUnicode } from 'url'
 import { looseObject } from '../../helper/interfaces'
-import {getAbsolutePath, getRelativePath} from '../../helper/utility'
+import {getAbsolutePath} from '../../helper/utility'
 const path = require('path')
 const fs = require('fs')
 

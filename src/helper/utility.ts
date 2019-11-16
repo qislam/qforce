@@ -62,7 +62,7 @@ function prepJsonForCsv(line: looseObject) {
   return line
 }
 
-function getAbsolutePath(rawPath: string) {
+function getRelativePath(rawPath: string) {
   let relativePath:string = path.join(...rawPath.trim().split('/'))
   return relativePath
 }

@@ -1,7 +1,7 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
 import {dxOptions} from '../../helper/interfaces'
-import {getRelativePath, prepJsonForCsv} from '../../helper/utility'
+import {getAbsolutePath, prepJsonForCsv} from '../../helper/utility'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
