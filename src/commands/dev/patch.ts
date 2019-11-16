@@ -11,10 +11,10 @@ export default class DevPatch extends Command {
 
   static flags = {
     help: flags.help({char: 'h'}),
-    force: flags.boolean({char: 'f'}),
+    apply: flags.boolean({char: 'a'}),
   }
 
-  static args = [{name: 'branchA'}, {name: 'branchB'}]
+  static args = [{name: 'featureBranch'}, {name: 'developBranch'}]
 
   async run() {
     cli.action.start('Preparing patch')
@@ -25,15 +25,20 @@ export default class DevPatch extends Command {
         fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
       )
     }
-    const branchA = args.branchA
-    const branchB = args.branchB || settings.developBranch
-    const patchPath = settings.patchPath + '/' + branchA.replace(/\//g, '-') + '.patch'
+    const featureBranch = args.featureBranch
+    const developBranch = args.developBranch || settings.developBranch
+    const patchPath = settings.patchPath + '/' + featureBranch.replace(/\//g, '-') + '.patch'
     
-    const mergeBase = await execa('git', ['merge-base', branchA, branchB])
+    const mergeBase = await execa('git', ['merge-base', featureBranch, developBranch])
     const baseCommit = mergeBase.stdout
-    const diff = await execa('git', ['diff', baseCommit, branchA])
-    const diffContent = diff.stdout
+    const diff = await execa('git', ['diff', baseCommit, featureBranch])
+    const diffContent = diff.stdout + '\n'
     fs.writeFileSync(getRelativePath(patchPath), diffContent, {encoding: 'utf-8'})
+    if (flags.apply) {
+      await execa('git', 
+        ['apply', '--reject', '--whitespace=fix', getRelativePath(patchPath)]
+      )
+    } 
     cli.action.stop()
   }
 }
