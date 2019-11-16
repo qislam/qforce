@@ -12,8 +12,8 @@ function toCsv(items: any) {
 }
 
 export default class Query extends Command {
-  static description = 'Execute anonymous apex.'
-  static aliases = ['query', 'q']
+  static description = 'Run a SOQL and save results to csv.'
+  static aliases = ['query', 'q', 'dx:query']
 
   static examples = [
     `$ q dx:query`,

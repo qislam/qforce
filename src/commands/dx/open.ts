@@ -1,9 +1,12 @@
 import {Command, flags} from '@oclif/command'
 import {dxOptions} from '../../helper/interfaces'
+const path = require('path')
+const fs = require('fs')
 const sfdx = require('sfdx-node');
 
 export default class Open extends Command {
   static description = 'Open an org.'
+  static aliases = ['open', 'dx:open', 'o']
 
   static examples = [
     `$ q dx:open -u uat`,
@@ -17,15 +20,22 @@ export default class Open extends Command {
 
   async run() {
     const {flags} = this.parse(Open)
-    let path = ''
+    let settings
+    if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
+      settings = JSON.parse(
+        fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
+      )
+    }
+    const targetusername = flags.username || settings.targetusername
+    let openPath = ''
     if (flags.path) {
-      if (flags.path == 'setup') path = 'lightning/setup/SetupOneHome/home'
-      else if (flags.path == 'console') path = '_ui/common/apex/debug/ApexCSIPage'
-      else path = flags.path
+      if (flags.path == 'setup') openPath = 'lightning/setup/SetupOneHome/home'
+      else if (flags.path == 'console') openPath = '_ui/common/apex/debug/ApexCSIPage'
+      else openPath = flags.path
     }
     let options: dxOptions = {}
-    if (flags.username) options.targetusername = flags.username
-    if (path) options.path = path
+    if (targetusername) options.targetusername = targetusername
+    if (openPath) options.path = openPath
     sfdx.org.open(options)
   }
 }
