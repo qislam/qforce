@@ -34,11 +34,11 @@ export default class Exe extends Command {
     const resultPath = flags.result || settings.exeResultsPath || 'exe.log'
     const targetusername = flags.username || settings.exeTargetusername || settings.targetusername
     let options: dxOptions = {}
-    options.apexcodefile = getAbsolutePath\(filePath)
+    options.apexcodefile = getAbsolutePath(filePath)
     if (targetusername) options.targetusername = targetusername
     let exeResults = await sfdx.apex.execute(options)
     fs.writeFileSync(
-      getAbsolutePath\(resultPath), 
+      getAbsolutePath(resultPath), 
       exeResults.logs,
       {encoding: 'utf-8'})
     cli.action.stop()
