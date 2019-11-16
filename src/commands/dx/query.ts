@@ -38,7 +38,7 @@ export default class Query extends Command {
     }
     const filePath = flags.file || settings.queryFilePath || 'query.soql'
     const resultPath = flags.result || settings.queryResultsPath || 'query.csv'
-    const queryString = flags.query || fs.readFileSync(getRelativePath(filePath), 'utf8')
+    const queryString = flags.query || fs.readFileSync(getAbsolutePath\(filePath), 'utf8')
     const targetusername = flags.username || settings.exeTargetusername || settings.targetusername
     let options: dxOptions = {}
     options.query = queryString
@@ -46,7 +46,7 @@ export default class Query extends Command {
     let queryResult = await sfdx.data.soqlQuery(options)
     queryResult.records.map(prepJsonForCsv)
     fs.writeFileSync(
-      getRelativePath(resultPath), 
+      getAbsolutePath\(resultPath), 
       csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
       {encoding: 'utf-8'})
     cli.action.stop()

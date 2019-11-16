@@ -1,7 +1,7 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
 import {dxOptions} from '../../helper/interfaces'
-import {getRelativePath} from '../../helper/utility'
+import {getRelativePath, getAbsolutePath} from '../../helper/utility'
 const path = require('path')
 const fs = require('fs')
 const sfdx = require('sfdx-node');
@@ -21,12 +21,18 @@ export default class DxDescribe extends Command {
     cli.action.start('Getting sObject description')
     const {flags} = this.parse(DxDescribe)
     let settings
-    if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
+    if (fs.existsSync(getAbsolutePath('.qforce/settings.json'))) {
       settings = JSON.parse(
-        fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
+        fs.readFileSync(getAbsolutePath('.qforce/settings.json'))
       )
     }
     const targetusername = flags.username || settings.targetusername
+    if (!fs.existsSync(getAbsolutePath('.qforce/definitions'))) {
+      fs.mkdirSync(getAbsolutePath('.qforce/definitions'))
+    }
+    if (!fs.existsSync(getAbsolutePath('.qforce/definitions/' + targetusername))) {
+      fs.mkdirSync(getAbsolutePath('.qforce/definitions/' + targetusername))
+    }
     const resultPath = flags.result || 
       settings.describeResultsPath || 
       settings.exeResultsPath || 
@@ -36,7 +42,12 @@ export default class DxDescribe extends Command {
     options.sobjecttype = flags.sobject
     let describeResults = await sfdx.schema.sobjectDescribe(options)
     fs.writeFileSync(
-      getRelativePath(resultPath), 
+      getAbsolutePath('.qforce/definitions/' + 
+        targetusername + '/' + flags.sobject.toLowerCase() + '.json'),
+      JSON.stringify(describeResults, null, 2),
+      {encoding: 'utf-8'})
+    fs.writeFileSync(
+      getAbsolutePath(resultPath), 
       JSON.stringify(describeResults, null, 2),
       {encoding: 'utf-8'})
     cli.action.stop()
