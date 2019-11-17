@@ -25,7 +25,6 @@ export default class DevConfig extends Command {
   static args = [{name: 'file'}]
 
   doInit(flags:looseObject) {
-    console.log(flags.targetusername)
     if (!fs.existsSync(getAbsolutePath('.qforce'))) {
       fs.mkdirSync(getAbsolutePath('.qforce'))
     }

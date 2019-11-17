@@ -59,6 +59,21 @@ function getQueryAll(queryString: string, targetusername: string) {
     let objectDefinition;
     if(fs.existsSync(jsonPath)) {
       objectDefinition = JSON.parse(fs.readFileSync(jsonPath))
+    } else {
+      let options: dxOptions = {}
+      if (targetusername) options.targetusername = targetusername
+      options.sobjecttype = sobjectName
+      sfdx.schema.sobjectDescribe(options)
+      .then(
+        (describeResults: looseObject) => {
+          fs.writeFileSync(
+            getAbsolutePath('.qforce/definitions/' + 
+              targetusername + '/' + sobjectName.toLowerCase() + '.json'),
+            JSON.stringify(describeResults, null, 2),
+            {encoding: 'utf-8'})
+        }
+      )
+      return queryString
     }
     let fieldNames = ''
     for (let field of objectDefinition.fields) {

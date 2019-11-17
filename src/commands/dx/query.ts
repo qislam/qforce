@@ -40,7 +40,6 @@ export default class Query extends Command {
     if (queryString.includes('*')) {
       queryString = getQueryAll(queryString, targetusername)
     }
-    this.log(queryString)
     let options: dxOptions = {}
     options.query = queryString
     if (targetusername) options.targetusername = targetusername
