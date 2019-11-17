@@ -2,6 +2,7 @@ import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
 import {filterQueryFields, getAbsolutePath, getQueryAll, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
 import {dxOptions, looseObject, migrationStep} from '../../helper/interfaces'
+import {allSamples} from '../../helper/migPlanSamples'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
@@ -13,9 +14,10 @@ export default class Migrate extends Command {
 
   static flags = {
     help: flags.help({char: 'h'}),
-    source: flags.string({char: 's', description: 'source org username or alias'}),
     destination: flags.string({char: 'd', description: 'destination org username or alias'}),
     file: flags.string({char: 'f', description: 'Path of migration plan file. Must be relative to cwd and in unix format.'}),
+    sample: flags.boolean({description: 'Copy sample migration plan files to current directory.'}),
+    source: flags.string({char: 's', description: 'source org username or alias'}),
   }
 
   async run() {
@@ -29,8 +31,20 @@ export default class Migrate extends Command {
       )
     }
     const {flags} = this.parse(Migrate)
+    if (flags.sample) {
+      for(let key in allSamples) {
+        fs.writeFileSync(
+          getAbsolutePath(key + '.js'), 
+          allSamples[key], 
+          {encoding: 'utf-8'}
+        )
+      }
+      return
+    }
     let file = flags.file || 'migrationPlan.js'
-
+    if(!fs.existsSync(getAbsolutePath(file))) {
+      this.log('No plan file provided. Run "qforce dev:migrate --sample" to get a sample.')
+    }
     const MigrationPlan = await import(getAbsolutePath(file))
     const startIndex = MigrationPlan.startIndex || 0
     const stopIndex = MigrationPlan.stopIndex || MigrationPlan.steps.length

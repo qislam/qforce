@@ -149,4 +149,12 @@ function prepJsonForCsv(line: looseObject) {
   return line
 }
 
-export {filterQueryFields, getAbsolutePath, getRelativePath, getQueryAll, poll, pollBulkStatus, prepJsonForCsv}
+export {
+  filterQueryFields, 
+  getAbsolutePath, 
+  getRelativePath, 
+  getQueryAll, 
+  poll, 
+  pollBulkStatus, 
+  prepJsonForCsv
+}
