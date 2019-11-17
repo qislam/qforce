@@ -1,6 +1,78 @@
 import {dxOptions, looseObject} from './interfaces'
 const path = require('path')
+const fs = require('fs')
 const sfdx = require('sfdx-node')
+
+function filterQueryFields(queryString: string, targetusername: string, externalIdField: string) {
+  let filteredQuery = ''
+  try {
+    let selectPart = queryString.substring(0, queryString.toLowerCase().indexOf('from'))
+    let fromPart = queryString.substring(queryString.toLowerCase().indexOf('from'),)
+    let originalFields = selectPart.toLowerCase().split(/\s+/)
+    originalFields.shift()
+    let sobjectName = fromPart.split(/\s+/)[1]
+    let jsonPath = getAbsolutePath('.qforce/definitions/' + 
+      targetusername + '/' + 
+      sobjectName.toLowerCase() + 
+      '.json')
+    let objectDefinition;
+    if(fs.existsSync(jsonPath)) {
+      objectDefinition = JSON.parse(fs.readFileSync(jsonPath))
+    }
+    let createableFields = []
+    for (let field of objectDefinition.fields) {
+      if (field.createable) createableFields.push(field.name.toLowerCase())
+    }
+    for (let field of originalFields) {
+      field = field.trim().replace(',', '')
+      if (!filteredQuery) {
+        filteredQuery = 'SELECT ' + externalIdField + ' '
+      } else if (createableFields.includes(field)) {
+        filteredQuery = filteredQuery + ', ' + field
+      }
+    }
+    filteredQuery = filteredQuery + ' ' + fromPart
+  } catch(err) {
+    console.log(JSON.stringify(err, null, 2))
+    return queryString
+  }
+  return filteredQuery
+}
+
+function getRelativePath(rawPath: string) {
+  let relativePath:string = path.join(...rawPath.trim().split('/'))
+  return relativePath
+}
+
+function getAbsolutePath(rawPath: string) {
+  let relativePath:string = path.join(process.cwd(), ...rawPath.trim().split('/'))
+  return relativePath
+}
+
+function getQueryAll(queryString: string, targetusername: string) {
+  try {
+    let sobjectName = queryString.split(/\s+/)[3]
+    let jsonPath = getAbsolutePath('.qforce/definitions/' + 
+      targetusername + '/' + 
+      sobjectName.toLowerCase() + 
+      '.json')
+    let objectDefinition;
+    if(fs.existsSync(jsonPath)) {
+      objectDefinition = JSON.parse(fs.readFileSync(jsonPath))
+    }
+    let fieldNames = ''
+    for (let field of objectDefinition.fields) {
+      if (fieldNames) fieldNames = fieldNames + ', ' + field.name
+      else fieldNames = field.name
+    }
+    if (fieldNames) queryString = queryString.replace(/\*/g, fieldNames)
+  } catch(err) {
+    console.log(err)
+    return queryString
+  }
+  
+  return queryString
+}
 
 function poll(fn: any, timeout: number, interval: number, context: any) {
     let endTime = Number(new Date()) + (timeout || 2000);
@@ -62,14 +134,4 @@ function prepJsonForCsv(line: looseObject) {
   return line
 }
 
-function getRelativePath(rawPath: string) {
-  let relativePath:string = path.join(...rawPath.trim().split('/'))
-  return relativePath
-}
-
-function getAbsolutePath(rawPath: string) {
-  let relativePath:string = path.join(process.cwd(), ...rawPath.trim().split('/'))
-  return relativePath
-}
-
-export {getAbsolutePath, getRelativePath, poll, pollBulkStatus, prepJsonForCsv}
+export {filterQueryFields, getAbsolutePath, getRelativePath, getQueryAll, poll, pollBulkStatus, prepJsonForCsv}

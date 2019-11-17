@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
-import {getAbsolutePath, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
+import {filterQueryFields, getAbsolutePath, getQueryAll, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
 import {dxOptions, looseObject, migrationStep} from '../../helper/interfaces'
 const sfdx = require('sfdx-node')
 const path = require('path')
@@ -43,15 +43,22 @@ export default class Migrate extends Command {
       this.log(i + ' - Step ' + step.name + ' - Started')
       if (step.query && (flags.source || MigrationPlan.source)) {
         cli.action.start(i + ' - Step ' + step.name + ' querying data')
+        const targetusername = flags.source || MigrationPlan.source
+        let queryString = step.query
+        if (queryString.includes('*')) {
+          queryString = getQueryAll(queryString, targetusername)
+        }
+        if (flags.destination || MigrationPlan.destination) {
+          queryString = filterQueryFields(queryString, targetusername, step.externalid)
+        }
         let options: dxOptions = {}
-        options.query = step.query
-        options.targetusername = flags.source || MigrationPlan.source
+        options.query = queryString
+        options.targetusername = targetusername
         let queryResult: any
         try {
           queryResult= await sfdx.data.soqlQuery(options)
         } catch(err) {
           cli.action.stop('Error in querying the data: ' + JSON.stringify(err, null, 2))
-          //this.log('Error in querying the data: ' + JSON.stringify(err))
           if(settings.ignoreError) continue
           else break
         }
