@@ -60,6 +60,15 @@ function getQueryAll(queryString: string, targetusername: string) {
     if(fs.existsSync(jsonPath)) {
       objectDefinition = JSON.parse(fs.readFileSync(jsonPath))
     } else {
+      if (!fs.existsSync(getAbsolutePath('.qforce'))) {
+        fs.mkdirSync(getAbsolutePath('.qforce'))
+      }
+      if (!fs.existsSync(getAbsolutePath('.qforce/definitions'))) {
+        fs.mkdirSync(getAbsolutePath('.qforce/definitions'))
+      }
+      if (!fs.existsSync(getAbsolutePath('.qforce/definitions/' + targetusername))) {
+        fs.mkdirSync(getAbsolutePath('.qforce/definitions/' + targetusername))
+      }
       let options: dxOptions = {}
       if (targetusername) options.targetusername = targetusername
       options.sobjecttype = sobjectName

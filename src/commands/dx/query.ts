@@ -38,7 +38,19 @@ export default class Query extends Command {
     let queryString = flags.query || fs.readFileSync(getAbsolutePath(filePath), 'utf8')
     
     if (queryString.includes('*')) {
-      queryString = getQueryAll(queryString, targetusername)
+      let sobjecttype = queryString.substring(queryString.toLowerCase().indexOf('from'),).split(/\s+/)[1].trim()
+      let objectDefinition = await sfdx.schema.sobjectDescribe({
+        targetusername: targetusername, 
+        sobjecttype: sobjecttype
+      })
+      let fieldNames = ''
+      let filterCreateable = objectDefinition.fields.length > 100
+      for (let field of objectDefinition.fields) {
+        if(filterCreateable && !field.createable) continue
+        if (fieldNames) fieldNames = fieldNames + ', ' + field.name
+        else fieldNames = field.name
+      }
+      if (fieldNames) queryString = queryString.replace(/\*/g, fieldNames)
     }
     let options: dxOptions = {}
     options.query = queryString

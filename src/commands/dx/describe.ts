@@ -27,6 +27,9 @@ export default class DxDescribe extends Command {
       )
     }
     const targetusername = flags.username || settings.targetusername
+    if (!fs.existsSync(getAbsolutePath('.qforce'))) {
+      fs.mkdirSync(getAbsolutePath('.qforce'))
+    }
     if (!fs.existsSync(getAbsolutePath('.qforce/definitions'))) {
       fs.mkdirSync(getAbsolutePath('.qforce/definitions'))
     }

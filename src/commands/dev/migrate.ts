@@ -60,7 +60,19 @@ export default class Migrate extends Command {
         const targetusername = flags.source || MigrationPlan.source
         let queryString = step.query
         if (queryString.includes('*')) {
-          queryString = getQueryAll(queryString, targetusername)
+          //queryString = getQueryAll(queryString, targetusername)
+          let objectDefinition = await sfdx.schema.sobjectDescribe({
+            targetusername: targetusername, 
+            sobjecttype: step.sobjecttype
+          })
+          let fieldNames = ''
+          let filterCreateable = step.filterCreateable || objectDefinition.fields.length > 100
+          for (let field of objectDefinition.fields) {
+            if(filterCreateable && !field.createable) continue
+            if (fieldNames) fieldNames = fieldNames + ', ' + field.name
+            else fieldNames = field.name
+          }
+          if (fieldNames) queryString = queryString.replace(/\*/g, fieldNames)
         }
         if (flags.destination || MigrationPlan.destination) {
           queryString = filterQueryFields(queryString, targetusername, step.externalid)
