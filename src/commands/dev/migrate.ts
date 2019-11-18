@@ -66,16 +66,12 @@ export default class Migrate extends Command {
             sobjecttype: step.sobjecttype
           })
           let fieldNames = ''
-          let filterCreateable = step.filterCreateable || objectDefinition.fields.length > 100
           for (let field of objectDefinition.fields) {
-            if(filterCreateable && !field.createable) continue
+            if(!field.createable) continue
             if (fieldNames) fieldNames = fieldNames + ', ' + field.name
             else fieldNames = field.name
           }
           if (fieldNames) queryString = queryString.replace(/\*/g, fieldNames)
-        }
-        if (flags.destination || MigrationPlan.destination) {
-          queryString = filterQueryFields(queryString, targetusername, step.externalid)
         }
         let options: dxOptions = {}
         options.query = queryString
