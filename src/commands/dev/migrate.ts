@@ -67,7 +67,7 @@ export default class Migrate extends Command {
           })
           let fieldNames = ''
           for (let field of objectDefinition.fields) {
-            if(!field.createable) continue
+            if(!field.createable || field.type == 'reference') continue
             if (fieldNames) fieldNames = fieldNames + ', ' + field.name
             else fieldNames = field.name
           }
