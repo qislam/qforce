@@ -49,53 +49,33 @@ function getAbsolutePath(rawPath: string) {
   return relativePath
 }
 
-function getQueryAll(queryString: string, targetusername: string) {
-  try {
-    let sobjectName = queryString.split(/\s+/)[3]
-    let jsonPath = getAbsolutePath('.qforce/definitions/' + 
-      targetusername + '/' + 
-      sobjectName.toLowerCase() + 
-      '.json')
-    let objectDefinition;
-    if(fs.existsSync(jsonPath)) {
-      objectDefinition = JSON.parse(fs.readFileSync(jsonPath))
-    } else {
-      if (!fs.existsSync(getAbsolutePath('.qforce'))) {
-        fs.mkdirSync(getAbsolutePath('.qforce'))
-      }
-      if (!fs.existsSync(getAbsolutePath('.qforce/definitions'))) {
-        fs.mkdirSync(getAbsolutePath('.qforce/definitions'))
-      }
-      if (!fs.existsSync(getAbsolutePath('.qforce/definitions/' + targetusername))) {
-        fs.mkdirSync(getAbsolutePath('.qforce/definitions/' + targetusername))
-      }
-      let options: dxOptions = {}
-      if (targetusername) options.targetusername = targetusername
-      options.sobjecttype = sobjectName
-      sfdx.schema.sobjectDescribe(options)
+function getQueryAll(query: string, targetusername: string, filter: boolean) {
+  return new Promise(
+    (resolve, reject) => {
+      let sobjecttype = query.substring(query.toLowerCase().indexOf('from'),).split(/\s+/)[1].trim()
+      sfdx.schema.sobjectDescribe({
+        targetusername: targetusername, 
+        sobjecttype: sobjecttype
+      })
       .then(
-        (describeResults: looseObject) => {
-          fs.writeFileSync(
-            getAbsolutePath('.qforce/definitions/' + 
-              targetusername + '/' + sobjectName.toLowerCase() + '.json'),
-            JSON.stringify(describeResults, null, 2),
-            {encoding: 'utf-8'})
+        (objectDefinition:looseObject) => {
+          let fieldNames = ''
+          let tooManyFields = objectDefinition.fields.length > 100
+          for (let field of objectDefinition.fields) {
+            if(filter || tooManyFields) {
+              if(!field.createable || 
+                field.type == 'reference' || 
+                (field.defaultedOnCreate && !field.updateable)) continue
+            }
+            if (fieldNames) fieldNames = fieldNames + ', ' + field.name
+            else fieldNames = field.name
+          }
+          if (fieldNames) query = query.replace(/\*/g, fieldNames)
+          resolve(query)
         }
       )
-      return queryString
     }
-    let fieldNames = ''
-    for (let field of objectDefinition.fields) {
-      if (fieldNames) fieldNames = fieldNames + ', ' + field.name
-      else fieldNames = field.name
-    }
-    if (fieldNames) queryString = queryString.replace(/\*/g, fieldNames)
-  } catch(err) {
-    console.log(err)
-    return queryString
-  }
-  
-  return queryString
+  )
 }
 
 function poll(fn: any, timeout: number, interval: number, context: any) {

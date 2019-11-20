@@ -137,6 +137,7 @@ export default class Migrate extends Command {
           if(MigrationPlan.ignoreError) continue
           else break
         }
+        cli.action.stop()
       }
     }
   }
