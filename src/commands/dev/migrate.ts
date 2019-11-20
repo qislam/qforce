@@ -67,7 +67,9 @@ export default class Migrate extends Command {
           })
           let fieldNames = ''
           for (let field of objectDefinition.fields) {
-            if(!field.createable || field.type == 'reference') continue
+            if(!field.createable || 
+              field.type == 'reference' || 
+              (field.defaultedOnCreate && !field.updateable)) continue
             if (fieldNames) fieldNames = fieldNames + ', ' + field.name
             else fieldNames = field.name
           }
@@ -125,13 +127,13 @@ export default class Migrate extends Command {
                                             , step.bulkStatusInterval)
         } catch(err) {
           cli.action.stop()
-          this.log('Error in getting bulk status: ' + err)
+          this.log('Error in getting bulk status: ' + JSON.stringify(err, null, 2))
           if(MigrationPlan.ignoreError) continue
           else break
         }
         if(pollResults && pollResults.numberRecordsFailed > 0) {
           cli.action.stop()
-          this.log('Some records did not get uploaded:\n' + JSON.stringify(pollResults))
+          this.log('Some records did not get uploaded:\n' + JSON.stringify(pollResults, null, 2))
           if(MigrationPlan.ignoreError) continue
           else break
         }
