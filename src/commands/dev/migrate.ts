@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
-import {filterQueryFields, getAbsolutePath, getQueryAll, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
+import {getAbsolutePath, getQueryAll, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
 import {dxOptions, looseObject, migrationStep} from '../../helper/interfaces'
 import {allSamples} from '../../helper/migPlanSamples'
 const sfdx = require('sfdx-node')
@@ -58,22 +58,9 @@ export default class Migrate extends Command {
       if (step.query && (flags.source || MigrationPlan.source)) {
         cli.action.start(i + ' - Step ' + step.name + ' querying data')
         const targetusername = flags.source || MigrationPlan.source
-        let queryString = step.query
+        let queryString: any = step.query
         if (queryString.includes('*')) {
-          //queryString = getQueryAll(queryString, targetusername)
-          let objectDefinition = await sfdx.schema.sobjectDescribe({
-            targetusername: targetusername, 
-            sobjecttype: step.sobjecttype
-          })
-          let fieldNames = ''
-          for (let field of objectDefinition.fields) {
-            if(!field.createable || 
-              field.type == 'reference' || 
-              (field.defaultedOnCreate && !field.updateable)) continue
-            if (fieldNames) fieldNames = fieldNames + ', ' + field.name
-            else fieldNames = field.name
-          }
-          if (fieldNames) queryString = queryString.replace(/\*/g, fieldNames)
+          queryString = await getQueryAll(queryString, targetusername, true)
         }
         let options: dxOptions = {}
         options.query = queryString
@@ -97,7 +84,7 @@ export default class Migrate extends Command {
         )
         cli.action.stop()
       } else {
-        this.log('Query and username missing.')
+        this.log('Query and/or username missing.')
         break
       }
       if (flags.destination || MigrationPlan.destination) {
