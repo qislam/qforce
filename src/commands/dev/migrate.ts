@@ -17,7 +17,8 @@ export default class Migrate extends Command {
     destination: flags.string({char: 'd', description: 'destination org username or alias'}),
     file: flags.string({char: 'f', description: 'Path of migration plan file. Must be relative to cwd and in unix format.'}),
     sample: flags.boolean({description: 'Copy sample migration plan files to current directory.'}),
-    source: flags.string({char: 's', description: 'source org username or alias'}),
+    source: flags.string({char: 's', description: 'source org username or alias.'}),
+    name: flags.string({char: 'n', description: 'Name of the step to execute.'}),
   }
 
   async run() {
@@ -45,11 +46,17 @@ export default class Migrate extends Command {
     if(!fs.existsSync(getAbsolutePath(file))) {
       this.log('No plan file provided. Run "qforce dev:migrate --sample" to get a sample.')
     }
+    let dataPath = file.split('/');
+    if (dataPath.length > 1) dataPath.pop()
+    dataPath.push('data')
     const MigrationPlan = await import(getAbsolutePath(file))
     const startIndex = MigrationPlan.startIndex || 0
     const stopIndex = MigrationPlan.stopIndex || MigrationPlan.steps.length
     for (let i = startIndex; i < stopIndex; i++) {
       let step: migrationStep = MigrationPlan.steps[i]
+      if (flags.name) {
+        if (step.name != flags.name) continue
+      }
       if (step.skip) {
         this.log(i + ' - Step ' + step.name + ' - Skipped')
         continue;
@@ -77,8 +84,11 @@ export default class Migrate extends Command {
         // remove attributes property and csv cleanup
         queryResult.records.map(prepJsonForCsv)
         
+        if(!fs.existsSync(path.join(process.cwd(), ...dataPath))) {
+          fs.mkdirSync(path.join(process.cwd(), ...dataPath), {recursive: true})
+        }
         fs.writeFileSync(
-          path.join(process.cwd(), 'data', `${step.name}-data.csv`), 
+          path.join(process.cwd(), ...dataPath, `${step.name}.csv`), 
           csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
           {encoding: 'utf-8'}
         )
@@ -91,7 +101,7 @@ export default class Migrate extends Command {
         cli.action.start(i + ' - Step ' + step.name + ' uploading data')
         let options: dxOptions = {}
         options.targetusername = flags.destination || MigrationPlan.destination
-        options.csvfile = path.join(process.cwd(), 'data', `${step.name}-data.csv`)
+        options.csvfile = path.join(process.cwd(), ...dataPath, `${step.name}.csv`)
         if(step.externalid) options.externalid = step.externalid
         options.sobjecttype = step.sobjecttype
         let loadResults: any

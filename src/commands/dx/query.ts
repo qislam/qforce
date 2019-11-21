@@ -34,6 +34,14 @@ export default class Query extends Command {
     }
     const filePath = flags.file || settings.queryFilePath || 'query.soql'
     const resultPath = flags.result || settings.queryResultsPath || 'query.csv'
+    if (resultPath.includes('/')) {
+      let resultPathArray = resultPath.split('/')
+      resultPathArray.pop()
+      if(!fs.existsSync(path.join(process.cwd(), ...resultPathArray))) {
+        fs.mkdirSync(path.join(process.cwd(), ...resultPathArray), {recursive: true})
+      }
+    }
+    
     const targetusername = flags.username || settings.exeTargetusername || settings.targetusername
     let queryString = flags.query || fs.readFileSync(getAbsolutePath(filePath), 'utf8')
     
