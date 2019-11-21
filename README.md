@@ -19,7 +19,7 @@ $ npm install -g qforce
 $ qforce COMMAND
 running command...
 $ qforce (-v|--version|version)
-qforce/0.1.5 darwin-x64 node-v10.13.0
+qforce/0.1.6 darwin-x64 node-v10.13.0
 $ qforce --help [COMMAND]
 USAGE
   $ qforce COMMAND
@@ -63,7 +63,7 @@ ALIASES
   $ qforce dev:config
 ```
 
-_See code: [src/commands/dev/config.ts](https://github.com/qislam/qforce/blob/v0.1.5/src/commands/dev/config.ts)_
+_See code: [src/commands/dev/config.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dev/config.ts)_
 
 ## `qforce dev:migrate`
 
@@ -77,7 +77,8 @@ OPTIONS
   -d, --destination=destination  destination org username or alias
   -f, --file=file                Path of migration plan file. Must be relative to cwd and in unix format.
   -h, --help                     show CLI help
-  -s, --source=source            source org username or alias
+  -n, --name=name                Name of the step to execute.
+  -s, --source=source            source org username or alias.
   --sample                       Copy sample migration plan files to current directory.
 
 ALIASES
@@ -85,7 +86,7 @@ ALIASES
   $ qforce m
 ```
 
-_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.1.5/src/commands/dev/migrate.ts)_
+_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dev/migrate.ts)_
 
 ## `qforce dev:patch [FEATUREBRANCH] [DEVELOPBRANCH]`
 
@@ -105,7 +106,7 @@ ALIASES
   $ qforce dev:patch
 ```
 
-_See code: [src/commands/dev/patch.ts](https://github.com/qislam/qforce/blob/v0.1.5/src/commands/dev/patch.ts)_
+_See code: [src/commands/dev/patch.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dev/patch.ts)_
 
 ## `qforce dx:describe`
 
@@ -126,7 +127,7 @@ ALIASES
   $ qforce dx:describe
 ```
 
-_See code: [src/commands/dx/describe.ts](https://github.com/qislam/qforce/blob/v0.1.5/src/commands/dx/describe.ts)_
+_See code: [src/commands/dx/describe.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dx/describe.ts)_
 
 ## `qforce dx:exe`
 
@@ -150,7 +151,7 @@ EXAMPLE
   $ q dx:exe
 ```
 
-_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.1.5/src/commands/dx/exe.ts)_
+_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dx/exe.ts)_
 
 ## `qforce dx:ol`
 
@@ -168,7 +169,7 @@ EXAMPLE
   $ q dx:ol
 ```
 
-_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.1.5/src/commands/dx/ol.ts)_
+_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dx/ol.ts)_
 
 ## `qforce dx:open`
 
@@ -192,7 +193,7 @@ EXAMPLE
   $ q dx:open -u uat
 ```
 
-_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.1.5/src/commands/dx/open.ts)_
+_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dx/open.ts)_
 
 ## `qforce dx:query`
 
@@ -218,7 +219,7 @@ EXAMPLE
   $ q dx:query
 ```
 
-_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.1.5/src/commands/dx/query.ts)_
+_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dx/query.ts)_
 
 ## `qforce help [COMMAND]`
 
