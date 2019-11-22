@@ -44,9 +44,17 @@ export default class Query extends Command {
     
     const targetusername = flags.username || settings.exeTargetusername || settings.targetusername
     let queryString = flags.query || fs.readFileSync(getAbsolutePath(filePath), 'utf8')
-    
+    queryString = queryString.trim()
+    if (!queryString.toLowerCase().includes('select')) {
+      let sobjectMapPath = getAbsolutePath('.qforce/definitions/' + targetusername + '/sobjectsByPrefix.json')
+      if (!fs.existsSync(sobjectMapPath)) return
+      let sobjectByPrefix = JSON.parse(fs.readFileSync(sobjectMapPath))
+      let sobject = sobjectByPrefix[queryString.substring(0,3)]
+      queryString = 'SELECT * FROM ' + sobject + ' WHERE ID = \'' + queryString + '\''
+    }
     if (queryString.includes('*')) {
       queryString = await getQueryAll(queryString, targetusername, false)
+      this.log('Complete Query: \n' + queryString)
     }
     let options: dxOptions = {}
     options.query = queryString

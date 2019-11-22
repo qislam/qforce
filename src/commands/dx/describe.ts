@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
-import {dxOptions} from '../../helper/interfaces'
+import {dxOptions, looseObject} from '../../helper/interfaces'
 import {getAbsolutePath} from '../../helper/utility'
 const path = require('path')
 const fs = require('fs')
@@ -13,8 +13,9 @@ export default class DxDescribe extends Command {
   static flags = {
     help: flags.help({char: 'h'}),
     username: flags.string({char: 'u'}),
-    sobject: flags.string({char: 's', required: true, description: 'sObject name.'}),
-    result: flags.string({char: 'r', description: 'Relative path to save results.'})
+    sobject: flags.string({char: 's', description: 'sObject name.'}),
+    result: flags.string({char: 'r', description: 'Relative path to save results.'}),
+    all: flags.boolean({char: 'a', description: 'To get all sObjects.'})
   }
 
   async run() {
@@ -27,31 +28,45 @@ export default class DxDescribe extends Command {
       )
     }
     const targetusername = flags.username || settings.targetusername
-    if (!fs.existsSync(getAbsolutePath('.qforce'))) {
-      fs.mkdirSync(getAbsolutePath('.qforce'))
-    }
-    if (!fs.existsSync(getAbsolutePath('.qforce/definitions'))) {
-      fs.mkdirSync(getAbsolutePath('.qforce/definitions'))
-    }
     if (!fs.existsSync(getAbsolutePath('.qforce/definitions/' + targetusername))) {
-      fs.mkdirSync(getAbsolutePath('.qforce/definitions/' + targetusername))
+      fs.mkdirSync(getAbsolutePath('.qforce/definitions/' + targetusername), {recursive: true})
+    }
+    let objectsToDescribe = []
+    if (flags.all) {
+      let options: dxOptions = {}
+      if (targetusername) options.targetusername = targetusername
+      options.sobjecttypecategory = 'all'
+      objectsToDescribe = await sfdx.schema.sobjectList(options)
+    } else {
+      objectsToDescribe.push(flags.sobject)
     }
     const resultPath = flags.result || 
       settings.describeResultsPath || 
       settings.exeResultsPath || 
       'exe.log'
-    let options: dxOptions = {}
-    if (targetusername) options.targetusername = targetusername
-    options.sobjecttype = flags.sobject
-    let describeResults = await sfdx.schema.sobjectDescribe(options)
+    let sobjectByPrefix: looseObject = {}
+    for (let sobject of objectsToDescribe) {
+      let options: dxOptions = {}
+      if (targetusername) options.targetusername = targetusername
+      options.sobjecttype = sobject.toLowerCase()
+      let describeResults = await sfdx.schema.sobjectDescribe(options)
+      sobjectByPrefix[describeResults.keyPrefix] = sobject
+      fs.writeFileSync(
+        getAbsolutePath('.qforce/definitions/' + 
+          targetusername + '/' + sobject.toLowerCase() + '.json'),
+        JSON.stringify(describeResults, null, 2),
+        {encoding: 'utf-8'})
+      if (flags.sobject) {
+        fs.writeFileSync(
+          getAbsolutePath(resultPath), 
+          JSON.stringify(describeResults, null, 2),
+          {encoding: 'utf-8'})
+      }
+    }
     fs.writeFileSync(
       getAbsolutePath('.qforce/definitions/' + 
-        targetusername + '/' + flags.sobject.toLowerCase() + '.json'),
-      JSON.stringify(describeResults, null, 2),
-      {encoding: 'utf-8'})
-    fs.writeFileSync(
-      getAbsolutePath(resultPath), 
-      JSON.stringify(describeResults, null, 2),
+        targetusername + '/sobjectsByPrefix' + '.json'),
+      JSON.stringify(sobjectByPrefix, null, 2),
       {encoding: 'utf-8'})
     cli.action.stop()
   }

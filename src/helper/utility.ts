@@ -50,30 +50,39 @@ function getAbsolutePath(rawPath: string) {
 }
 
 function getQueryAll(query: string, targetusername: string, filter: boolean) {
+  function buildQuery(objectDefinition:looseObject) {
+    let fieldNames = ''
+    let tooManyFields = objectDefinition.fields.length > 100
+    for (let field of objectDefinition.fields) {
+      if(filter || tooManyFields) {
+        if(!field.createable || 
+          field.type == 'reference' || 
+          (field.defaultedOnCreate && !field.updateable)) continue
+      }
+      if (fieldNames) fieldNames = fieldNames + ', ' + field.name
+      else fieldNames = field.name
+    }
+    if (fieldNames) query = query.replace(/\*/g, fieldNames)
+  }
   return new Promise(
     (resolve, reject) => {
       let sobjecttype = query.substring(query.toLowerCase().indexOf('from'),).split(/\s+/)[1].trim()
-      sfdx.schema.sobjectDescribe({
-        targetusername: targetusername, 
-        sobjecttype: sobjecttype
-      })
-      .then(
-        (objectDefinition:looseObject) => {
-          let fieldNames = ''
-          let tooManyFields = objectDefinition.fields.length > 100
-          for (let field of objectDefinition.fields) {
-            if(filter || tooManyFields) {
-              if(!field.createable || 
-                field.type == 'reference' || 
-                (field.defaultedOnCreate && !field.updateable)) continue
-            }
-            if (fieldNames) fieldNames = fieldNames + ', ' + field.name
-            else fieldNames = field.name
+      let defPath = getAbsolutePath('.qforce/definitions/' + targetusername + '/' + sobjecttype + '.json')
+      if (!fs.existsSync(defPath)) {
+        buildQuery(JSON.parse(fs.readFileSync(defPath)))
+        resolve(query)
+      } else {
+        sfdx.schema.sobjectDescribe({
+          targetusername: targetusername, 
+          sobjecttype: sobjecttype
+        })
+        .then(
+          (objectDefinition:looseObject) => {
+            buildQuery(objectDefinition)
+            resolve(query)
           }
-          if (fieldNames) query = query.replace(/\*/g, fieldNames)
-          resolve(query)
-        }
-      )
+        )
+      }
     }
   )
 }
