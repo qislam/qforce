@@ -19,7 +19,7 @@ $ npm install -g qforce
 $ qforce COMMAND
 running command...
 $ qforce (-v|--version|version)
-qforce/0.1.6 darwin-x64 node-v10.13.0
+qforce/0.1.7 darwin-x64 node-v10.13.0
 $ qforce --help [COMMAND]
 USAGE
   $ qforce COMMAND
@@ -63,7 +63,7 @@ ALIASES
   $ qforce dev:config
 ```
 
-_See code: [src/commands/dev/config.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dev/config.ts)_
+_See code: [src/commands/dev/config.ts](https://github.com/qislam/qforce/blob/v0.1.7/src/commands/dev/config.ts)_
 
 ## `qforce dev:migrate`
 
@@ -86,7 +86,7 @@ ALIASES
   $ qforce m
 ```
 
-_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dev/migrate.ts)_
+_See code: [src/commands/dev/migrate.ts](https://github.com/qislam/qforce/blob/v0.1.7/src/commands/dev/migrate.ts)_
 
 ## `qforce dev:patch [FEATUREBRANCH] [DEVELOPBRANCH]`
 
@@ -106,7 +106,7 @@ ALIASES
   $ qforce dev:patch
 ```
 
-_See code: [src/commands/dev/patch.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dev/patch.ts)_
+_See code: [src/commands/dev/patch.ts](https://github.com/qislam/qforce/blob/v0.1.7/src/commands/dev/patch.ts)_
 
 ## `qforce dx:describe`
 
@@ -117,9 +117,10 @@ USAGE
   $ qforce dx:describe
 
 OPTIONS
+  -a, --all                To get all sObjects.
   -h, --help               show CLI help
   -r, --result=result      Relative path to save results.
-  -s, --sobject=sobject    (required) sObject name.
+  -s, --sobject=sobject    sObject name.
   -u, --username=username
 
 ALIASES
@@ -127,7 +128,7 @@ ALIASES
   $ qforce dx:describe
 ```
 
-_See code: [src/commands/dx/describe.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dx/describe.ts)_
+_See code: [src/commands/dx/describe.ts](https://github.com/qislam/qforce/blob/v0.1.7/src/commands/dx/describe.ts)_
 
 ## `qforce dx:exe`
 
@@ -151,7 +152,7 @@ EXAMPLE
   $ q dx:exe
 ```
 
-_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dx/exe.ts)_
+_See code: [src/commands/dx/exe.ts](https://github.com/qislam/qforce/blob/v0.1.7/src/commands/dx/exe.ts)_
 
 ## `qforce dx:ol`
 
@@ -169,7 +170,7 @@ EXAMPLE
   $ q dx:ol
 ```
 
-_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dx/ol.ts)_
+_See code: [src/commands/dx/ol.ts](https://github.com/qislam/qforce/blob/v0.1.7/src/commands/dx/ol.ts)_
 
 ## `qforce dx:open`
 
@@ -193,7 +194,7 @@ EXAMPLE
   $ q dx:open -u uat
 ```
 
-_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dx/open.ts)_
+_See code: [src/commands/dx/open.ts](https://github.com/qislam/qforce/blob/v0.1.7/src/commands/dx/open.ts)_
 
 ## `qforce dx:query`
 
@@ -219,7 +220,7 @@ EXAMPLE
   $ q dx:query
 ```
 
-_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.1.6/src/commands/dx/query.ts)_
+_See code: [src/commands/dx/query.ts](https://github.com/qislam/qforce/blob/v0.1.7/src/commands/dx/query.ts)_
 
 ## `qforce help [COMMAND]`
 
