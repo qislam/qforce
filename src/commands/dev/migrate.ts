@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
-import {getAbsolutePath, getQueryAll, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
+import {deleteFolderRecursive, getAbsolutePath, getQueryAll, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
 import {dxOptions, looseObject, migrationStep} from '../../helper/interfaces'
 import {allSamples} from '../../helper/migPlanSamples'
 const sfdx = require('sfdx-node')
@@ -22,9 +22,6 @@ export default class Migrate extends Command {
   }
 
   async run() {
-    if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
-      fs.mkdirSync(path.join(process.cwd(), 'data'))
-    }
     let settings
     if (fs.existsSync(getAbsolutePath('.qforce/settings.json'))) {
       settings = JSON.parse(
@@ -47,8 +44,11 @@ export default class Migrate extends Command {
       this.log('No plan file provided. Run "qforce dev:migrate --sample" to get a sample.')
     }
     let dataPath = file.split('/');
-    if (dataPath.length > 1) dataPath.pop()
+    dataPath.pop()
     dataPath.push('data')
+    if(fs.existsSync(path.join(process.cwd(), ...dataPath))) {
+      deleteFolderRecursive(dataPath.join('/'))
+    }
     const MigrationPlan = await import(getAbsolutePath(file))
     const startIndex = MigrationPlan.startIndex || 0
     const stopIndex = MigrationPlan.stopIndex || MigrationPlan.steps.length

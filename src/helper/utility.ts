@@ -3,6 +3,22 @@ const path = require('path')
 const fs = require('fs')
 const sfdx = require('sfdx-node')
 
+function deleteFolderRecursive(pathString: string) {
+  let dataPath = pathString.split('/')
+  let basePath = path.join(process.cwd(), ...dataPath)
+  if( fs.existsSync(basePath) ) {
+    fs.readdirSync(basePath).forEach((file: string,index: number) => {
+      let curPath = path.join(process.cwd(), ...dataPath, file)
+      if(fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(dataPath.join('/') + '/' + file);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(basePath);
+  }
+}
+
 function filterQueryFields(queryString: string, targetusername: string, externalIdField: string) {
   let filteredQuery = ''
   try {
@@ -135,8 +151,9 @@ function pollBulkStatus(options: dxOptions, retries: number, interval: number) {
 
 function prepJsonForCsv(line: looseObject) {
   if (line.attributes) delete line.attributes
+  if (line.height) delete line.height
   for (let key of Object.keys(line)) {
-    if (line[key] == 'null') line[key] = ''
+    if (line[key] == '\u001b[1mnull\u001b[22m') line[key] = ''
     if (typeof line[key] === 'string') {
       line[key] = line[key].replace(/"/g, '""')
       line[key] = '"' + line[key] + '"'
@@ -148,6 +165,7 @@ function prepJsonForCsv(line: looseObject) {
 }
 
 export {
+  deleteFolderRecursive,
   filterQueryFields, 
   getAbsolutePath, 
   getRelativePath, 
