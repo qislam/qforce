@@ -120,7 +120,6 @@ function poll(fn: any, timeout: number, interval: number, context: any) {
     var checkCondition = function(resolve: any, reject: any) {
         // If the condition is met, we're done! 
         let result = fn(context);
-        console.log(result.state)
         if(result.state == 'Completed') {
             resolve(result);
         }
@@ -178,7 +177,6 @@ function prepJsonForCsv(line: looseObject) {
 function setStepReferences(step: migrationStep, dataPath: string) {
   for (let reference of step.references) {
     let refPath = getAbsolutePath(dataPath + '/' + reference + '.csv')
-    console.log(refPath)
     if(fs.existsSync(refPath)) {
       step[reference] = csvjson.toObject(fs.readFileSync(refPath, {encoding: 'utf8'}))
     }
