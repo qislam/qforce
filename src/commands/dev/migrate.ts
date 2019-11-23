@@ -1,6 +1,12 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
-import {deleteFolderRecursive, getAbsolutePath, getQueryAll, pollBulkStatus, prepJsonForCsv} from '../../helper/utility'
+import {deleteFolderRecursive, 
+  getAbsolutePath, 
+  getQueryAll, 
+  handleNullValues,
+  pollBulkStatus, 
+  prepJsonForCsv,
+  setStepReferences} from '../../helper/utility'
 import {dxOptions, looseObject, migrationStep} from '../../helper/interfaces'
 import {allSamples} from '../../helper/migPlanSamples'
 const sfdx = require('sfdx-node')
@@ -49,11 +55,11 @@ export default class Migrate extends Command {
     if(fs.existsSync(path.join(process.cwd(), ...dataPath))) {
       deleteFolderRecursive(dataPath.join('/'))
     }
-    const MigrationPlan = await import(getAbsolutePath(file))
-    const startIndex = MigrationPlan.startIndex || 0
-    const stopIndex = MigrationPlan.stopIndex || MigrationPlan.steps.length
+    const migrationPlan = await import(getAbsolutePath(file))
+    const startIndex = migrationPlan.startIndex || 0
+    const stopIndex = migrationPlan.stopIndex || migrationPlan.steps.length
     for (let i = startIndex; i < stopIndex; i++) {
-      let step: migrationStep = MigrationPlan.steps[i]
+      let step: migrationStep = migrationPlan.steps[i]
       if (flags.name) {
         if (step.name != flags.name) continue
       }
@@ -61,10 +67,13 @@ export default class Migrate extends Command {
         this.log(i + ' - Step ' + step.name + ' - Skipped')
         continue;
       }
+      if (step.references) {
+        step = setStepReferences(step, dataPath.join('/'))
+      }
       this.log(i + ' - Step ' + step.name + ' - Started')
-      if (step.query && (flags.source || MigrationPlan.source)) {
+      if (step.query && (flags.source || migrationPlan.source)) {
         cli.action.start(i + ' - Step ' + step.name + ' querying data')
-        const targetusername = flags.source || MigrationPlan.source
+        const targetusername = flags.source || migrationPlan.source
         let queryString: any = step.query
         if (queryString.includes('*')) {
           queryString = await getQueryAll(queryString, targetusername, true)
@@ -80,10 +89,14 @@ export default class Migrate extends Command {
           if(settings.ignoreError) continue
           else break
         }
+        queryResult.records.map(handleNullValues)
         if (step.transform) queryResult.records.map(step.transform.bind(step))
+        if (step.transformAll) {
+          queryResult.records = step.transformAll.call(step, queryResult.records)
+        } 
         // remove attributes property and csv cleanup
         queryResult.records.map(prepJsonForCsv)
-        
+
         if(!fs.existsSync(path.join(process.cwd(), ...dataPath))) {
           fs.mkdirSync(path.join(process.cwd(), ...dataPath), {recursive: true})
         }
@@ -97,10 +110,10 @@ export default class Migrate extends Command {
         this.log('Query and/or username missing.')
         break
       }
-      if (flags.destination || MigrationPlan.destination) {
+      if (flags.destination || migrationPlan.destination) {
         cli.action.start(i + ' - Step ' + step.name + ' uploading data')
         let options: dxOptions = {}
-        options.targetusername = flags.destination || MigrationPlan.destination
+        options.targetusername = flags.destination || migrationPlan.destination
         options.csvfile = path.join(process.cwd(), ...dataPath, `${step.name}.csv`)
         if(step.externalid) options.externalid = step.externalid
         options.sobjecttype = step.sobjecttype
@@ -110,7 +123,7 @@ export default class Migrate extends Command {
         } catch(err) {
           cli.action.stop()
           this.log('Error uploading data: ' + JSON.stringify(err, null, 2))
-          if(MigrationPlan.ignoreError) continue
+          if(migrationPlan.ignoreError) continue
           else break
         }
         options = {}
@@ -125,13 +138,13 @@ export default class Migrate extends Command {
         } catch(err) {
           cli.action.stop()
           this.log('Error in getting bulk status: ' + JSON.stringify(err, null, 2))
-          if(MigrationPlan.ignoreError) continue
+          if(migrationPlan.ignoreError) continue
           else break
         }
         if(pollResults && pollResults.numberRecordsFailed > 0) {
           cli.action.stop()
           this.log('Some records did not get uploaded:\n' + JSON.stringify(pollResults, null, 2))
-          if(MigrationPlan.ignoreError) continue
+          if(migrationPlan.ignoreError) continue
           else break
         }
         cli.action.stop()

@@ -1,7 +1,8 @@
-import {dxOptions, looseObject} from './interfaces'
+import {dxOptions, looseObject, migrationStep} from './interfaces'
 const path = require('path')
 const fs = require('fs')
 const sfdx = require('sfdx-node')
+const csvjson = require('csvjson')
 
 function deleteFolderRecursive(pathString: string) {
   let dataPath = pathString.split('/')
@@ -103,6 +104,15 @@ function getQueryAll(query: string, targetusername: string, filter: boolean) {
   )
 }
 
+function handleNullValues(line: looseObject) {
+  for (let key of Object.keys(line)) {
+    if (line[key] == '\u001b[1mnull\u001b[22m') line[key] = ''
+    if (line[key] == 'null') line[key] = ''
+    if (line[key] == null) line[key] = ''
+  }
+  return line
+}
+
 function poll(fn: any, timeout: number, interval: number, context: any) {
     let endTime = Number(new Date()) + (timeout || 2000);
     interval = interval || 100;
@@ -154,6 +164,7 @@ function prepJsonForCsv(line: looseObject) {
   if (line.height) delete line.height
   for (let key of Object.keys(line)) {
     if (line[key] == '\u001b[1mnull\u001b[22m') line[key] = ''
+    if (line[key] == 'null') line[key] = ''
     if (typeof line[key] === 'string') {
       line[key] = line[key].replace(/"/g, '""')
       line[key] = '"' + line[key] + '"'
@@ -164,13 +175,26 @@ function prepJsonForCsv(line: looseObject) {
   return line
 }
 
+function setStepReferences(step: migrationStep, dataPath: string) {
+  for (let reference of step.references) {
+    let refPath = getAbsolutePath(dataPath + '/' + reference + '.csv')
+    console.log(refPath)
+    if(fs.existsSync(refPath)) {
+      step[reference] = csvjson.toObject(fs.readFileSync(refPath, {encoding: 'utf8'}))
+    }
+  }
+  return step
+}
+
 export {
   deleteFolderRecursive,
   filterQueryFields, 
   getAbsolutePath, 
   getRelativePath, 
   getQueryAll, 
+  handleNullValues,
   poll, 
   pollBulkStatus, 
-  prepJsonForCsv
+  prepJsonForCsv,
+  setStepReferences
 }
