@@ -110,7 +110,7 @@ export default class Migrate extends Command {
         this.log('Query and/or username missing.')
         break
       }
-      if (!step.referenceOnly) continue
+      if (step.referenceOnly) continue
       if (flags.destination || migrationPlan.destination) {
         cli.action.start(i + ' - Step ' + step.name + ' uploading data')
         let options: dxOptions = {}
