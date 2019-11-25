@@ -1,7 +1,7 @@
 qforce
 =
 
-Commands to help with salesforce development process. This is still very experimental so expect things to change a lot.
+Commands to help with salesforce development process. This is still very experimental so expect things to change a lot. More detailed documentation is available [here](https://qislam.github.io/qforce)
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/q.svg)](https://npmjs.org/package/q)
@@ -28,15 +28,18 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`qforce dev:config [FILE]`](#qforce-devconfig-file)
-* [`qforce dev:migrate`](#qforce-devmigrate)
-* [`qforce dev:patch [FEATUREBRANCH] [DEVELOPBRANCH]`](#qforce-devpatch-featurebranch-developbranch)
-* [`qforce dx:describe`](#qforce-dxdescribe)
-* [`qforce dx:exe`](#qforce-dxexe)
-* [`qforce dx:ol`](#qforce-dxol)
-* [`qforce dx:open`](#qforce-dxopen)
-* [`qforce dx:query`](#qforce-dxquery)
-* [`qforce help [COMMAND]`](#qforce-help-command)
+- [qforce](#qforce)
+- [Usage](#usage)
+- [Commands](#commands)
+  - [`qforce dev:config [FILE]`](#qforce-devconfig-file)
+  - [`qforce dev:migrate`](#qforce-devmigrate)
+  - [`qforce dev:patch [FEATUREBRANCH] [DEVELOPBRANCH]`](#qforce-devpatch-featurebranch-developbranch)
+  - [`qforce dx:describe`](#qforce-dxdescribe)
+  - [`qforce dx:exe`](#qforce-dxexe)
+  - [`qforce dx:ol`](#qforce-dxol)
+  - [`qforce dx:open`](#qforce-dxopen)
+  - [`qforce dx:query`](#qforce-dxquery)
+  - [`qforce help [COMMAND]`](#qforce-help-command)
 
 ## `qforce dev:config [FILE]`
 
