@@ -26,7 +26,9 @@ baseurl: "/qforce" # the subpath of your site, e.g. /blog
 url: "https://qislam.github.io/" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: quimatics
 github_username:  qislam
-
+show_excerpts: true
+disqus:
+  shortname: qforce
 # Build settings
 theme: minima
 plugins:

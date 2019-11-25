@@ -5,9 +5,7 @@ date:   2019-11-16 21:02:57 -0500
 categories: LinkedIn
 ---
 
-## The Challenge
-
-During the lifecycle of a typical salesfroce project, we have to download, process and upload data from one salesforce org to another. Salesforce Dataloader, although a good tool, can sometime be cumbersome and hard to use. In this article, we will will learn how to setup these data jobs efficiently and effortlessly.
+During the lifecycle of a typical salesforce project, we have to download, process and upload data from one salesforce org to another. Salesforce Dataloader, although a good tool, can sometime be cumbersome and hard to use. In this article, we will will learn how to setup these data jobs efficiently and effortlessly.
 
 ## Setting the stage
 
