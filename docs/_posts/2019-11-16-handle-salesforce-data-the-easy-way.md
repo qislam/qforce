@@ -1,18 +1,9 @@
-# Handle Salesforce data; the easy way
-
-<!-- TOC -->
-
-- [Handle Salesforce data; the easy way](#handle-salesforce-data-the-easy-way)
-  - [The Challenge](#the-challenge)
-  - [Setting the stage](#setting-the-stage)
-  - [Getting Started](#getting-started)
-  - [Making the plan](#making-the-plan)
-    - [Back-up Data](#back-up-data)
-    - [Update records](#update-records)
-    - [Copy Data From One Org to Another](#copy-data-from-one-org-to-another)
-  - [Conclusion](#conclusion)
-
-<!-- /TOC -->
+---
+layout: post
+title:  "Handle Salesforce data; the easy way..."
+date:   2019-11-16 21:02:57 -0500
+categories: LinkedIn
+---
 
 ## The Challenge
 
