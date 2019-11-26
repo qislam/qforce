@@ -36,7 +36,7 @@ USAGE
 
 <center>
 <img style="width: 50%; height: auto; margin-bottom: 50px; margin-top: 50px;" 
-    src="assets/img/QamarPortrait.png" />
+    src="assets/img/QamarPortrait_small.png" />
 </center>
 
 Dr. Islam is a passionate developer with extensive experience on salesforce platform with enterprise level app development using declarative programming, Apex, Visualforce, Lightning, SOQL, SOQL and JavaScript.
