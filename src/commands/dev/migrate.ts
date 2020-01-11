@@ -49,13 +49,22 @@ export default class Migrate extends Command {
     if(!fs.existsSync(getAbsolutePath(file))) {
       this.log('No plan file provided. Run "qforce dev:migrate --sample" to get a sample.')
     }
-    let dataPath = file.split('/');
-    dataPath.pop()
+    let basePath = file.split('/')
+    basePath.pop()
+
+    let dataPath = basePath.slice()
     dataPath.push('data')
-    if(fs.existsSync(path.join(process.cwd(), ...dataPath))) {
-      deleteFolderRecursive(dataPath.join('/'))
-    }
+
+    let refPath = basePath.slice()
+    refPath.push('reference')
+    
     const migrationPlan = await import(getAbsolutePath(file))
+    // Clear data folder will delete all existing csv files in data folder
+    if(migrationPlan.clearDataFolder) {
+      if(fs.existsSync(path.join(process.cwd(), ...dataPath))) {
+        deleteFolderRecursive(dataPath.join('/'))
+      }
+    }
     const startIndex = migrationPlan.startIndex || 0
     const stopIndex = migrationPlan.stopIndex || migrationPlan.steps.length
     for (let i = startIndex; i < stopIndex; i++) {
@@ -68,7 +77,7 @@ export default class Migrate extends Command {
         continue;
       }
       if (step.references) {
-        step = setStepReferences(step, dataPath.join('/'))
+        step = setStepReferences(step, basePath.join('/'))
       }
       this.log(i + ' - Step ' + step.name + ' - Started')
       if (step.query && (flags.source || migrationPlan.source)) {
@@ -97,30 +106,38 @@ export default class Migrate extends Command {
         // remove attributes property and csv cleanup
         queryResult.records.map(prepJsonForCsv)
 
-        if(!fs.existsSync(path.join(process.cwd(), ...dataPath))) {
-          fs.mkdirSync(path.join(process.cwd(), ...dataPath), {recursive: true})
+        if(step.referenceOnly) {
+          if(!fs.existsSync(path.join(process.cwd(), ...refPath))) {
+            fs.mkdirSync(path.join(process.cwd(), ...refPath), {recursive: true})
+          }
+          fs.writeFileSync(
+            path.join(process.cwd(), ...refPath, `${step.name}.csv`), 
+            csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
+            {encoding: 'utf-8'}
+          )
+        } else {
+          if(!fs.existsSync(path.join(process.cwd(), ...dataPath))) {
+            fs.mkdirSync(path.join(process.cwd(), ...dataPath), {recursive: true})
+          }
+          fs.writeFileSync(
+            path.join(process.cwd(), ...dataPath, `${step.name}.csv`), 
+            csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
+            {encoding: 'utf-8'}
+          )
         }
-        fs.writeFileSync(
-          path.join(process.cwd(), ...dataPath, `${step.name}.csv`), 
-          csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
-          {encoding: 'utf-8'}
-        )
         cli.action.stop()
-      } else {
-        this.log('Query and/or username missing.')
-        break
-      }
+      } 
       if (step.referenceOnly) continue
       if (flags.destination || migrationPlan.destination) {
         cli.action.start(i + ' - Step ' + step.name + ' uploading data')
         let options: dxOptions = {}
         options.targetusername = flags.destination || migrationPlan.destination
         options.csvfile = path.join(process.cwd(), ...dataPath, `${step.name}.csv`)
-        if(step.externalid) options.externalid = step.externalid
-        options.sobjecttype = step.sobjecttype
+        if(step.externalid) options.externalid = step.externalid || step.externalId
+        options.sobjecttype = step.sobjecttype || step.sObjectType
         let loadResults: any
         try {
-          loadResults= await sfdx.data.bulkUpsert(options)
+          loadResults = await sfdx.data.bulkUpsert(options)
         } catch(err) {
           cli.action.stop()
           this.log('Error uploading data: ' + JSON.stringify(err, null, 2))

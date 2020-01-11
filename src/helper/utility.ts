@@ -174,11 +174,14 @@ function prepJsonForCsv(line: looseObject) {
   return line
 }
 
-function setStepReferences(step: migrationStep, dataPath: string) {
+function setStepReferences(step: migrationStep, basePath: string) {
   for (let reference of step.references) {
-    let refPath = getAbsolutePath(dataPath + '/' + reference + '.csv')
-    if(fs.existsSync(refPath)) {
-      step[reference] = csvjson.toObject(fs.readFileSync(refPath, {encoding: 'utf8'}))
+    let refReference = getAbsolutePath(basePath + '/reference/' + reference + '.csv')
+    let dataReference = getAbsolutePath(basePath + '/data/' + reference + '.csv')
+    if(fs.existsSync(refReference)) {
+      step[reference] = csvjson.toObject(fs.readFileSync(refReference, {encoding: 'utf8'}))
+    } else if(fs.existsSync(dataReference)) {
+      step[reference] = csvjson.toObject(fs.readFileSync(dataReference, {encoding: 'utf8'}))
     }
   }
   return step
