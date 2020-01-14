@@ -167,7 +167,7 @@ function prepJsonForCsv(line: looseObject) {
     if (typeof line[key] === 'string') {
       line[key] = line[key].replace(/"/g, '""')
       line[key] = '"' + line[key] + '"'
-    } else if (line[key].attributes) {
+    } else if (line[key] && line[key].attributes) {
       prepJsonForCsv(line[key])
     } 
   }
