@@ -24,12 +24,12 @@ USAGE
 
 ## Commands
 
-- [`qforce dev:config`](#qforce-devconfig-file)
-- [`qforce dev:migrate`](#qforce-devmigrate)
-- [`qforce dev:patch`](#qforce-devpatch-featurebranch-developbranch)
-- [`qforce dx:describe`](#qforce-dxdescribe)
-- [`qforce dx:exe`](#qforce-dxexe)
-- [`qforce dx:ol`](#qforce-dxol)
-- [`qforce dx:open`](#qforce-dxopen)
-- [`qforce dx:query`](#qforce-dxquery)
+- [`qforce dev:config`](docs/2020/01/19/dev-config.html)
+- [`qforce dev:migrate`](docs/2020/01/19/dev-migrate.html)
+- [`qforce dev:patch`](docs/2020/01/19/dev-patch.html)
+- [`qforce dx:describe`](docs/2020/01/19/dx-describe.html)
+- [`qforce dx:exe`](docs/2020/01/19/dx-exe.html)
+- [`qforce dx:ol`](docs/2020/01/19/dx-ol.html)
+- [`qforce dx:open`](docs/2020/01/19/dx-open.html)
+- [`qforce dx:query`](docs/2020/01/19/dx-query.html)
 - [`qforce help`](#qforce-help-command)
