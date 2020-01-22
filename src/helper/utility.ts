@@ -164,6 +164,7 @@ function prepJsonForCsv(line: looseObject) {
   for (let key of Object.keys(line)) {
     if (line[key] == '\u001b[1mnull\u001b[22m') delete line[key]
     if (line[key] == 'null') delete line[key]
+    if (line[key] === "") delete line[key]
     if (typeof line[key] === 'string') {
       line[key] = line[key].replace(/"/g, '""')
       line[key] = '"' + line[key] + '"'
