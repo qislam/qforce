@@ -29,13 +29,14 @@ Here is a sample plan file.
 ```js
 let Plan = {
     startIndex: 0, // If set, process will start at the step index provided.
-    stopIndex: 1, // If set, process will stop at the step index provided.
+    stopIndex: 100, // If set, process will stop at the step index provided.
     source: 'prod', // Source param can be skipped on command line if set here. If both provided, value from command line will be used.
     destination: 'dev', // Same as source.
     ignoreError: true, // Default is false and process will stop on error.
     bulkStatusRetries: 3, // After loading data, how many times to query for results before continuing further.
-    bulkStatusInterval: 30000, // Interval at wchich to poll for load status.
+    bulkStatusInterval: 3000, // Interval at wchich to poll for load status.
     clearDataFolder: true, // This will clear data folder before starting migration process.
+    clearRefFolder: true, // This will clear data folder before starting migration process.
     steps: [
         {
             name: 'Demo_Step_1',
@@ -56,6 +57,11 @@ let Plan = {
             sobjecttype: 'Contact',
             externalid: 'External_Id__c',
             query: `SELECT * FROM Contact`,
+        },
+        {
+            name: 'Demo_Step_3',
+            description: 'Execution of apex code',
+            apexCodeFile: 'link/to/apex/script.cls'
         }
     ]
 }

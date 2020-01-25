@@ -74,17 +74,26 @@ export default class Migrate extends Command {
     const stopIndex = migrationPlan.stopIndex || migrationPlan.steps.length
     for (let i = startIndex; i < stopIndex; i++) {
       let step: migrationStep = migrationPlan.steps[i]
+      if (!step.name) continue;
       if (flags.name) {
         if (step.name != flags.name) continue
       }
+      this.log(i + ' - Step ' + step.name + ' - Started')
       if (step.skip) {
         this.log(i + ' - Step ' + step.name + ' - Skipped')
+        continue;
+      }
+      if (step.apexCodeFile && (flags.destination || migrationPlan.destination)) {
+        let options: dxOptions = {}
+        options.apexcodefile = getAbsolutePath(step.apexCodeFile)
+        options.targetusername = flags.destination || migrationPlan.destination
+        let exeResults = await sfdx.apex.execute(options)
+        if (exeResults && exeResults.logs) this.log(exeResults.logs)
         continue;
       }
       if (step.references) {
         step = setStepReferences(step, basePath.join('/'))
       }
-      this.log(i + ' - Step ' + step.name + ' - Started')
       if (step.query && (flags.source || migrationPlan.source)) {
         cli.action.start(i + ' - Step ' + step.name + ' querying data')
         const targetusername = flags.source || migrationPlan.source
