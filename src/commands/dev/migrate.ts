@@ -65,6 +65,11 @@ export default class Migrate extends Command {
         deleteFolderRecursive(dataPath.join('/'))
       }
     }
+    if(migrationPlan.clearRefFolder) {
+      if(fs.existsSync(path.join(process.cwd(), ...refPath))) {
+        deleteFolderRecursive(refPath.join('/'))
+      }
+    }
     const startIndex = migrationPlan.startIndex || 0
     const stopIndex = migrationPlan.stopIndex || migrationPlan.steps.length
     for (let i = startIndex; i < stopIndex; i++) {
