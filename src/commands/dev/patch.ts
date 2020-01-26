@@ -6,7 +6,7 @@ const path = require('path')
 const fs = require('fs')
 
 export default class DevPatch extends Command {
-  static description = 'describe the command here'
+  static description = 'Prepare and apply a patch to current branch from another branch.'
   static aliases = ['patch','dev:patch']
 
   static flags = {
@@ -14,7 +14,6 @@ export default class DevPatch extends Command {
     apply: flags.boolean({char: 'a', 
       description: 'Set to true if want to apply calculated patch to current branch.'}),
     patchPath: flags.string({char: 'p', description: 'Path to save the patch file.'}),
-
   }
 
   static args = [{name: 'featureBranch'}, {name: 'developBranch'}]

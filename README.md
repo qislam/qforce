@@ -29,6 +29,7 @@ USAGE
 # Commands
 <!-- commands -->
 * [`qforce dev:config [FILE]`](#qforce-devconfig-file)
+* [`qforce dev:deploy [FILE]`](#qforce-devdeploy-file)
 * [`qforce dev:migrate`](#qforce-devmigrate)
 * [`qforce dev:patch [FEATUREBRANCH] [DEVELOPBRANCH]`](#qforce-devpatch-featurebranch-developbranch)
 * [`qforce dx:describe`](#qforce-dxdescribe)
@@ -64,6 +65,22 @@ ALIASES
 ```
 
 _See code: [src/commands/dev/config.ts](https://github.com/qislam/qforce/blob/v0.3.1/src/commands/dev/config.ts)_
+
+## `qforce dev:deploy [FILE]`
+
+describe the command here
+
+```
+USAGE
+  $ qforce dev:deploy [FILE]
+
+OPTIONS
+  -f, --force
+  -h, --help       show CLI help
+  -n, --name=name  name to print
+```
+
+_See code: [src/commands/dev/deploy.ts](https://github.com/qislam/qforce/blob/v0.3.1/src/commands/dev/deploy.ts)_
 
 ## `qforce dev:migrate`
 
