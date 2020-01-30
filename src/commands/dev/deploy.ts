@@ -31,9 +31,15 @@ export default class DevDeploy extends Command {
     const featureBranch = args.featureBranch
     const developBranch = args.developBranch || settings.developBranch
     
-    const mergeBase = await execa('git', ['merge-base', featureBranch, developBranch])
-    const baseCommit = mergeBase.stdout
-    const diff = await execa('git', ['diff', '--name-only', baseCommit, featureBranch])
+    let diff
+    if (flags.diff) {
+      diff = await execa('git', ['diff', '--name-only', featureBranch, developBranch])
+    } else {
+      const mergeBase = await execa('git', ['merge-base', featureBranch, developBranch])
+      const baseCommit = mergeBase.stdout
+      diff = await execa('git', ['diff', '--name-only', baseCommit, featureBranch])
+    }
+    
     const diffContent = diff.stdout.replace(/\n/g, ',')
     this.log(diffContent)
     let options: dxOptions = {}

@@ -14,6 +14,7 @@ export default class DevPatch extends Command {
     apply: flags.boolean({char: 'a', 
       description: 'Set to true if want to apply calculated patch to current branch.'}),
     patchPath: flags.string({char: 'p', description: 'Path to save the patch file.'}),
+    syncUp: flags.boolean({char: 's', description: 'Set to true if need to retrieve'}),
   }
 
   static args = [{name: 'featureBranch'}, {name: 'developBranch'}]
@@ -34,10 +35,18 @@ export default class DevPatch extends Command {
       fs.mkdirSync(getAbsolutePath(patchPathBase))
     }
     const patchPath = patchPathBase + '/' + featureBranch.replace(/\//g, '-') + '.patch'
-
     const mergeBase = await execa('git', ['merge-base', featureBranch, developBranch])
     const baseCommit = mergeBase.stdout
-    const diff = await execa('git', ['diff', baseCommit, featureBranch])
+    
+    let diff
+    if (flags.syncUp) {
+      const diffFiles = await execa('git', ['diff', '--name-only', baseCommit, featureBranch])
+      const filePaths = diffFiles.stdout.replace(/\n/g, ' ')
+      diff = await execa('git', ['diff', featureBranch, developBranch, filePaths])
+    } else {
+      diff = await execa('git', ['diff', baseCommit, featureBranch])
+    }
+    
     const diffContent = diff.stdout + '\n'
     fs.writeFileSync(getAbsolutePath(patchPath), diffContent, {encoding: 'utf-8'})
     if (flags.apply) {
