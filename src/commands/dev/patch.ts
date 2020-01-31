@@ -42,7 +42,8 @@ export default class DevPatch extends Command {
     if (flags.syncUp) {
       const diffFiles = await execa('git', ['diff', '--name-only', baseCommit, featureBranch])
       const filePaths = diffFiles.stdout.replace(/\n/g, ' ')
-      diff = await execa('git', ['diff', featureBranch, developBranch, filePaths])
+      const commandString = 'git diff ' + baseCommit + ' ' + developBranch + ' ' + filePaths
+      diff = await execa.command(commandString)
     } else {
       diff = await execa('git', ['diff', baseCommit, featureBranch])
     }

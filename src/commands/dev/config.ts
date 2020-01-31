@@ -28,16 +28,16 @@ export default class DevConfig extends Command {
     if (!fs.existsSync(getAbsolutePath('.qforce'))) {
       fs.mkdirSync(getAbsolutePath('.qforce'))
     }
-    if (!fs.existsSync(getAbsolutePath('query.soql'))) {
+    if (!fs.existsSync(getAbsolutePath('.qforce/query.soql'))) {
       fs.writeFileSync(getAbsolutePath(
-        'query.soql'), 
+        '.qforce/query.soql'), 
         'SELECT Id, Name FROM Account LIMIT 1', 
         {encoding: 'utf-8'}
       )
     }
-    if (!fs.existsSync(getAbsolutePath('exe.cls'))) {
+    if (!fs.existsSync(getAbsolutePath('.qforce/exe.cls'))) {
       fs.writeFileSync(getAbsolutePath(
-        'exe.cls'), 
+        '.qforce/exe.cls'), 
         'System.debug(UserInfo.getUserName());', 
         {encoding: 'utf-8'}
       )
