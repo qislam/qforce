@@ -44,7 +44,6 @@ export default class DevDeploy extends Command {
       diff = await execa('git', ['diff', '--name-only', baseCommit, featureBranch])
     }
     const diffFilesList = diff.stdout.split('\n')
-    this.log(diffFilesList)
 
     for (let sourceFilePath of diffFilesList) {
       if(!fs.existsSync(sourceFilePath)) continue
@@ -60,6 +59,7 @@ export default class DevDeploy extends Command {
           || sourceFilePath.includes('siteDotComSites/')
           || sourceFilePath.includes('triggers/')
           || sourceFilePath.includes('components/')) {
+        if (sourceFilePath.includes('meta.xml')) continue
         fs.copyFileSync(sourceFilePath + '-meta.xml', deployFilePath + '-meta.xml')
       } else if (sourceFilePath.includes('documents/')) {
         fs.copyFileSync(sourceFilePath.replace(/\..*$/, '.document-meta.xml'), 
