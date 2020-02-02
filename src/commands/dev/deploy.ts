@@ -67,8 +67,10 @@ export default class DevDeploy extends Command {
       } else if (sourceFilePath.includes('lwc/')
           || sourceFilePath.includes('aura/')) {
         fs.readdirSync(path.dirname(sourceFilePath)).forEach((file: string,index: number) => {
-          fs.copyFileSync(path.dirname(sourceFilePath) + '/' + file
-          , path.dirname(deployFilePath) + '/' + file)
+          if (fs.lstatSync(path.dirname(sourceFilePath) + '/' + file).isFile()) {
+            fs.copyFileSync(path.dirname(sourceFilePath) + '/' + file
+            , path.dirname(deployFilePath) + '/' + file)
+          }
         })
       }
     }
