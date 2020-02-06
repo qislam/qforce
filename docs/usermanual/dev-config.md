@@ -1,17 +1,19 @@
 ---
-layout: post
-title:  "dev:config"
-date:   2020-01-19 10:00:00 -0500
-categories: docs
+layout: page
+title:  "qforce dev:config"
 ---
 
 To set configuration variables for use as defaults for other commands.
 
-```
-USAGE
-  $ qforce dev:config [FILE]
+### Usage
 
-OPTIONS
+```bash
+  $ qforce dev:config [FILE]
+```
+
+### Options
+
+```bash
   -g, --global                             To set or retrieve setting from global.
   -h, --help                               show CLI help
   -u, --targetusername=targetusername      Set or retrieve targetusername.
@@ -22,8 +24,11 @@ OPTIONS
   --init                                   Initiate qforce settings.
   --queryFilePath=queryFilePath            Path of query file to use with query command.
   --queryResultsPath=queryResultsPath      Path to save results of query command.
+```
 
-ALIASES
+### Aliases
+
+```bash
   $ qforce config
   $ qforce dev:config
 ```

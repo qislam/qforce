@@ -1,30 +1,38 @@
 ---
-layout: post
-title:  "dev:migrate"
-date:   2020-01-19 10:00:00 -0500
-categories: docs
+layout: page
+title:  "qforce dev:migrate"
 ---
 
 Migrate data from one org to another based on a migration plan.
 
-```
-USAGE
-  $ qforce dev:migrate
+### Usage
 
-OPTIONS
+```bash
+  $ qforce dev:migrate
+```
+
+### Options
+
+```bash
   -f, --file=file                Path of migration plan file. Must be relative to cwd and in unix format.
   -s, --source=source            source org username or alias.
   -d, --destination=destination  destination org username or alias
   -n, --name=name                Name of the step to execute.
   --sample                       Copy sample migration plan files to current directory.
   -h, --help                     show CLI help
+```
 
-ALIASES
+### Defaults
+
+
+### Aliases
+
+```bash
   $ qforce migrate
   $ qforce m
 ```
 
-Here is a sample plan file.
+### Sample Plan
 
 ```js
 let Plan = {

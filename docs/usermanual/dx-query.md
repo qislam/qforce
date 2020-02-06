@@ -1,28 +1,33 @@
 ---
-layout: post
-title:  "dx:query"
-date:   2020-01-19 10:00:00 -0500
-categories: docs
+layout: page
+title:  "qforce dx:query"
 ---
 
 Run a SOQL and save results to csv.
 
-```
-USAGE
-  $ qforce dx:query
+### Usage
 
-OPTIONS
+```bash
+  $ qforce dx:query
+```
+
+### Options
+
+```bash
   -f, --file=file          Relative path of query file in unix format.
   -h, --help               show CLI help
   -q, --query=query        SOQL query as string.
   -r, --result=result      Relative path to save results of query.
   -u, --username=username
+```
 
-ALIASES
+### Defaults
+
+
+### Aliases
+
+```bash
   $ qforce query
   $ qforce q
   $ qforce dx:query
-
-EXAMPLE
-  $ q dx:query
 ```

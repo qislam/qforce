@@ -1,26 +1,31 @@
 ---
-layout: post
-title:  "dx:exe"
-date:   2020-01-19 10:00:00 -0500
-categories: docs
+layout: page
+title:  "qforce dx:exe"
 ---
 
 Execute anonymous apex.
 
-```
-USAGE
-  $ qforce dx:exe
+### Usage
 
-OPTIONS
+```bash
+  $ qforce dx:exe
+```
+
+### Options
+
+```bash
   -f, --file=file          Relative path of apex file in unix format.
   -h, --help               show CLI help
   -r, --result=result      Relative path to save results.
   -u, --username=username
+```
 
-ALIASES
+### Defaults
+
+
+### Aliases
+
+```bash
   $ qforce exe
   $ qforce dx:exe
-
-EXAMPLE
-  $ q dx:exe
 ```
