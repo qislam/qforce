@@ -96,7 +96,10 @@ export default class Migrate extends Command {
       }
       if (step.query && (flags.source || migrationPlan.source)) {
         cli.action.start(i + ' - Step ' + step.name + ' querying data')
-        const targetusername = flags.source || migrationPlan.source
+        let targetusername = flags.source || migrationPlan.source
+        if (step.queryDestination) {
+          targetusername = flags.destination || migrationPlan.destination
+        }
         let queryString: any = step.query
         if (queryString.includes('*')) {
           queryString = await getQueryAll(queryString, targetusername, true)
