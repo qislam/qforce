@@ -79,6 +79,12 @@ export default class Migrate extends Command {
         if (step.name != flags.name) continue
       }
       this.log(i + ' - Step ' + step.name + ' - Started')
+      if (step.references) {
+        step = setStepReferences(step, basePath.join('/'))
+      }
+      if (step.calculateFlags) {
+        step.calculateFlags.call(step)
+      } 
       if (step.skip) {
         this.log(i + ' - Step ' + step.name + ' - Skipped')
         continue;
@@ -91,14 +97,25 @@ export default class Migrate extends Command {
         if (exeResults && exeResults.logs) this.log(exeResults.logs)
         continue;
       }
-      if (step.references) {
-        step = setStepReferences(step, basePath.join('/'))
+      if (step.generateData && !step.query) {
+        let generatedData = step.generateData.call(step)
+        generatedData.map(prepJsonForCsv)
+        if(!fs.existsSync(path.join(process.cwd(), ...dataPath))) {
+          fs.mkdirSync(path.join(process.cwd(), ...dataPath), {recursive: true})
+        }
+        fs.writeFileSync(
+          path.join(process.cwd(), ...dataPath, `${step.name}.csv`), 
+          csvjson.toCSV(generatedData, {headers: 'relative'}), 
+          {encoding: 'utf-8'}
+        )
       }
-      if (step.query && (flags.source || migrationPlan.source)) {
+      if (step.query && (step.queryDestination || flags.source || migrationPlan.source)) {
         cli.action.start(i + ' - Step ' + step.name + ' querying data')
-        let targetusername = flags.source || migrationPlan.source
+        let targetusername;
         if (step.queryDestination) {
           targetusername = flags.destination || migrationPlan.destination
+        } else {
+          targetusername = flags.source || migrationPlan.source
         }
         let queryString: any = step.query
         if (queryString.includes('*')) {
@@ -123,7 +140,7 @@ export default class Migrate extends Command {
         // remove attributes property and csv cleanup
         queryResult.records.map(prepJsonForCsv)
 
-        if(step.referenceOnly) {
+        if(step.referenceOnly || step.isReference) {
           if(!fs.existsSync(path.join(process.cwd(), ...refPath))) {
             fs.mkdirSync(path.join(process.cwd(), ...refPath), {recursive: true})
           }
@@ -132,7 +149,8 @@ export default class Migrate extends Command {
             csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
             {encoding: 'utf-8'}
           )
-        } else {
+        } 
+        if (!step.referenceOnly) {
           if(!fs.existsSync(path.join(process.cwd(), ...dataPath))) {
             fs.mkdirSync(path.join(process.cwd(), ...dataPath), {recursive: true})
           }
