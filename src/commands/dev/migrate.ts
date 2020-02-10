@@ -136,20 +136,20 @@ export default class Migrate extends Command {
         if (step.transform) queryResult.records.map(step.transform.bind(step))
         if (step.transformAll) {
           queryResult.records = step.transformAll.call(step, queryResult.records)
-        } 
-        // remove attributes property and csv cleanup
-        queryResult.records.map(prepJsonForCsv)
+        }
 
         if(step.referenceOnly || step.isReference) {
           if(!fs.existsSync(path.join(process.cwd(), ...refPath))) {
             fs.mkdirSync(path.join(process.cwd(), ...refPath), {recursive: true})
           }
           fs.writeFileSync(
-            path.join(process.cwd(), ...refPath, `${step.name}.csv`), 
-            csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
+            path.join(process.cwd(), ...refPath, `${step.name}.json`), 
+            JSON.stringify(queryResult.records), 
             {encoding: 'utf-8'}
           )
         } 
+        // remove attributes property and csv cleanup
+        queryResult.records.map(prepJsonForCsv)
         if (!step.referenceOnly) {
           if(!fs.existsSync(path.join(process.cwd(), ...dataPath))) {
             fs.mkdirSync(path.join(process.cwd(), ...dataPath), {recursive: true})
