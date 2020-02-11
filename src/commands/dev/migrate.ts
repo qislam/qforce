@@ -105,7 +105,7 @@ export default class Migrate extends Command {
         }
         fs.writeFileSync(
           path.join(process.cwd(), ...dataPath, `${step.name}.csv`), 
-          csvjson.toCSV(generatedData, {headers: 'relative'}), 
+          csvjson.toCSV(generatedData, {headers: 'relative', wrap: true}), 
           {encoding: 'utf-8'}
         )
       }
@@ -156,7 +156,7 @@ export default class Migrate extends Command {
           }
           fs.writeFileSync(
             path.join(process.cwd(), ...dataPath, `${step.name}.csv`), 
-            csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
+            csvjson.toCSV(queryResult.records, {headers: 'relative', wrap: true}), 
             {encoding: 'utf-8'}
           )
         }

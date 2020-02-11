@@ -63,7 +63,7 @@ export default class Query extends Command {
     queryResult.records.map(prepJsonForCsv)
     fs.writeFileSync(
       getAbsolutePath(resultPath), 
-      csvjson.toCSV(queryResult.records, {headers: 'relative'}), 
+      csvjson.toCSV(queryResult.records, {headers: 'relative', wrap: true}), 
       {encoding: 'utf-8'})
     cli.action.stop()
   }
