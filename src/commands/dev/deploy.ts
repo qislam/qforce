@@ -75,15 +75,6 @@ export default class DevDeploy extends Command {
       }
     }
 
-    let options: dxOptions = {}
-    if (flags.username) options.targetusername = flags.username
-    options.sourcepath = '.qforce/deploy/' + settings.deployBaseDir || 'force-app'
-    options.testlevel = 'NoTestRun'
-    options.ignorewarnings = true
-    options.verbose = true
-
-    let deployResults = await sfdx.source.deploy(options)
-    this.log(deployResults)
-    //cli.action.stop()
+    execa.command('sfdx force:source:deploy -p .qforce/deploy').stdout.pipe(process.stdout)
   }
 }

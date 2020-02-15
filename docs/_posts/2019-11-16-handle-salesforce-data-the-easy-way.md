@@ -78,7 +78,7 @@ We will be looking at the following use cases.
 
 ### Back-up Data
 
-Let us assume we need to back all accounts, contacts and opportunities from our production org. We have already verified the org using sfdx and are using "prod" as alias. We can accomplish this by defining our steps as follows (only showing the steps, remaining structure is needed as shown above from a sample plan);
+Let us assume we need to backup all accounts, contacts and opportunities from our production org. We have already verified the org using sfdx and are using "prod" as alias. We can accomplish this by defining our steps as follows (only showing the steps, remaining structure is needed as shown above from a sample plan);
 
 ```js
 let plan = {
