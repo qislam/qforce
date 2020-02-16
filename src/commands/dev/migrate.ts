@@ -163,7 +163,21 @@ export default class Migrate extends Command {
         cli.action.stop()
       } 
       if (step.referenceOnly) continue
-      if (flags.destination || migrationPlan.destination) {
+      let loadResults: any
+      if (step.isDelete) {
+        cli.action.start(i + ' - Step ' + step.name + ' deleting data')
+        let options: dxOptions = {}
+        options.targetusername = flags.destination || migrationPlan.destination
+        options.csvfile = path.join(process.cwd(), ...dataPath, `${step.name}.csv`)
+        try {
+          loadResults = await sfdx.data.bulkDelete(options)
+        } catch(err) {
+          cli.action.stop()
+          this.log('Error uploading data: ' + JSON.stringify(err, null, 2))
+          if(migrationPlan.ignoreError) continue
+          else break
+        }
+      } else if (flags.destination || migrationPlan.destination) {
         cli.action.start(i + ' - Step ' + step.name + ' uploading data')
         let options: dxOptions = {}
         options.targetusername = flags.destination || migrationPlan.destination
@@ -179,29 +193,29 @@ export default class Migrate extends Command {
           if(migrationPlan.ignoreError) continue
           else break
         }
-        options = {}
-        options.targetusername = flags.destination
-        options.jobid = loadResults[0].jobId
-        options.batchid = loadResults[0].id
-        let pollResults: any
-        try {
-          pollResults = await pollBulkStatus(options
-                                            , step.bulkStatusRetries
-                                            , step.bulkStatusInterval)
-        } catch(err) {
-          cli.action.stop()
-          this.log('Error in getting bulk status: ' + JSON.stringify(err, null, 2))
-          if(migrationPlan.ignoreError) continue
-          else break
-        }
-        if(pollResults && pollResults.numberRecordsFailed > 0) {
-          cli.action.stop()
-          this.log('Some records did not get uploaded:\n' + JSON.stringify(pollResults, null, 2))
-          if(migrationPlan.ignoreError) continue
-          else break
-        }
-        cli.action.stop()
       }
+      let options: dxOptions = {}
+      options.targetusername = flags.destination
+      options.jobid = loadResults[0].jobId
+      options.batchid = loadResults[0].id
+      let pollResults: any
+      try {
+        pollResults = await pollBulkStatus(options
+                                          , step.bulkStatusRetries
+                                          , step.bulkStatusInterval)
+      } catch(err) {
+        cli.action.stop()
+        this.log('Error in getting bulk status: ' + JSON.stringify(err, null, 2))
+        if(migrationPlan.ignoreError) continue
+        else break
+      }
+      if(pollResults && pollResults.numberRecordsFailed > 0) {
+        cli.action.stop()
+        this.log('Some records did not get uploaded:\n' + JSON.stringify(pollResults, null, 2))
+        if(migrationPlan.ignoreError) continue
+        else break
+      }
+      cli.action.stop()
     }
   }
 }
