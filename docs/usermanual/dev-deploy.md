@@ -3,7 +3,7 @@ layout: page
 title:  "qforce dev:deploy"
 ---
 
-To calculate and apply patch based on current branch. 
+To calculate and apply patch based on a branch. It will first check for all files committed in given [FEATUREBRANCH] and then copy them from currently checked out branch to .qforce/deploy folder.
 
 ### Usage
 
@@ -22,6 +22,7 @@ To calculate and apply patch based on current branch.
 
 ### Defaults
 
+- If [DEVELOPBRANCH] not provided, it will look for "developBranch" param in settings.
 
 ### Aliases
 

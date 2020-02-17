@@ -55,10 +55,10 @@ let Plan = {
             skip: false, // Default is false. Can be set to true if want to skip on a step.
             sobjecttype: 'Account',
             externalid: 'Id',
-            referenceOnly: false, // Set to true if want to save to reference folder instead of data
+            referenceOnly: false, // Set to true if want to save results to reference folder only.
             query: `SELECT * FROM Account LIMIT 1`,
             transform: function transform(line) {
-                line.Name = line.Name + ' 1'; //line['Name'].replace(/transformed/gi, '').trim();
+                line.Name = line['Name'].replace(/test/gi, '').trim();
                 return line;
             }
         },
@@ -67,12 +67,29 @@ let Plan = {
             description: 'Loading records from one org to another with external id.',
             sobjecttype: 'Contact',
             externalid: 'External_Id__c',
+            isReference: true, // If set to true, results will be saved to reference folder as well as data folder.
             query: `SELECT * FROM Contact`,
         },
         {
             name: 'Demo_Step_3',
             description: 'Execution of apex code',
             apexCodeFile: 'link/to/apex/script.cls'
+        },
+        {
+            name: 'Demo_Step_4',
+            description: 'Deleting records based on ID',
+            sobjecttype: 'Contact',
+            query: `SELECT * FROM Contact WHERE Email = 'something@test.com`
+        },
+        {
+            name: "Demo_Step_5",
+            references: ['Demo_Step_0', 'Demo_Step_1'],
+            generateData: function generateData() {
+                console.log(this['Demo_Step_0'][0].Name)
+                let data = []
+                data.push({name: this['Demo_Step_0'][0].Name + ' generated data', email: 'someemail@example.com'})
+                return data
+            }
         }
     ]
 }
