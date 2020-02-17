@@ -109,10 +109,16 @@ export default class Migrate extends Command {
           {encoding: 'utf-8'}
         )
       }
-      if (step.query && (step.queryDestination || flags.source || migrationPlan.source)) {
+      if (step.query && 
+          (
+            step.queryDestination 
+            || step.isDelete 
+            || flags.source 
+            || migrationPlan.source
+          )) {
         cli.action.start(i + ' - Step ' + step.name + ' querying data')
         let targetusername;
-        if (step.queryDestination) {
+        if (step.queryDestination || step.isDelete) {
           targetusername = flags.destination || migrationPlan.destination
         } else {
           targetusername = flags.source || migrationPlan.source
@@ -169,8 +175,10 @@ export default class Migrate extends Command {
         let options: dxOptions = {}
         options.targetusername = flags.destination || migrationPlan.destination
         options.csvfile = path.join(process.cwd(), ...dataPath, `${step.name}.csv`)
+        options.sobjecttype = step.sobjecttype || step.sObjectType
         try {
           loadResults = await sfdx.data.bulkDelete(options)
+          this.log(loadResults)
         } catch(err) {
           cli.action.stop()
           this.log('Error uploading data: ' + JSON.stringify(err, null, 2))
