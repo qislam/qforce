@@ -27,6 +27,7 @@ USAGE
 - [`qforce dev:config`](usermanual/dev-config.html)
 - [`qforce dev:migrate`](usermanual/dev-migrate.html)
 - [`qforce dev:patch`](usermanual/dev-patch.html)
+- [`qforce dev:deploy`](usermanual/dev-deploy.html)
 - [`qforce dx:describe`](usermanual/dx-describe.html)
 - [`qforce dx:exe`](usermanual/dx-exe.html)
 - [`qforce dx:ol`](usermanual/dx-ol.html)
