@@ -20,7 +20,9 @@ export default class DevConfig extends Command {
     exeResultsPath: flags.string({description: 'Path to save log of exe command execution.'}),
     bulkStatusRetries: flags.integer({description: 'Number of retries to poll status of bulk job.'}),
     bulkStatusInterval: flags.integer({description: 'Interval in milliseconds for polling bluk job status.'}),
-    lastDeployCommit: flags.string({description: 'Commit hash of the last commit.'}),
+    lastDeployCommit: flags.string({description: 'Commit hash of the last commit that was deployed.'}),
+    developBranch: flags.string({description: 'Name of default develop branch.'}),
+    patchPath: flags.string({description: 'Path to save the patch file when running patch command'}),
   }
 
   static args = [{name: 'file'}]
