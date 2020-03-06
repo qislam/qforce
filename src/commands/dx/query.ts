@@ -42,8 +42,14 @@ export default class Query extends Command {
       }
     }
     
-    const targetusername = flags.username || settings.exeTargetusername || settings.targetusername
+    let targetusername = flags.username || settings.exeTargetusername || settings.targetusername
     let queryString = flags.query || fs.readFileSync(getAbsolutePath(filePath), 'utf8')
+
+    if (queryString.startsWith('//')) {
+      targetusername = queryString.substring(2, queryString.toLowerCase().indexOf('select')).trim()
+      queryString = queryString.substring(queryString.toLowerCase().indexOf('select'),)
+    }
+
     queryString = queryString.trim()
     if (!queryString.toLowerCase().includes('select')) {
       let sobjectMapPath = getAbsolutePath('.qforce/definitions/' + targetusername + '/sobjectsByPrefix.json')
