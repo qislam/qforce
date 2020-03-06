@@ -46,14 +46,18 @@ export default class Query extends Command {
     let queryString = flags.query || fs.readFileSync(getAbsolutePath(filePath), 'utf8')
 
     if (queryString.startsWith('//')) {
-      targetusername = queryString.substring(2, queryString.toLowerCase().indexOf('select')).trim()
-      queryString = queryString.substring(queryString.toLowerCase().indexOf('select'),)
+      const firstLine = queryString.split(/\n/, 1)[0]
+      targetusername = firstLine.substring(2,).trim()
+      queryString = queryString.substring(queryString.toLowerCase().indexOf('\n'),)
     }
 
     queryString = queryString.trim()
     if (!queryString.toLowerCase().includes('select')) {
       let sobjectMapPath = getAbsolutePath('.qforce/definitions/' + targetusername + '/sobjectsByPrefix.json')
-      if (!fs.existsSync(sobjectMapPath)) return
+      if (!fs.existsSync(sobjectMapPath)) {
+        this.log('Mapping file does not exist for username ' + targetusername)
+        return
+      }
       let sobjectByPrefix = JSON.parse(fs.readFileSync(sobjectMapPath))
       let sobject = sobjectByPrefix[queryString.substring(0,3)]
       queryString = 'SELECT * FROM ' + sobject + ' WHERE ID = \'' + queryString + '\''

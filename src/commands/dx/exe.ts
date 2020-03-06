@@ -32,7 +32,12 @@ export default class Exe extends Command {
     }
     const filePath = flags.file || settings.exeFilePath || 'exe.cls'
     const resultPath = flags.result || settings.exeResultsPath || 'exe.log'
-    const targetusername = flags.username || settings.exeTargetusername || settings.targetusername
+    let targetusername = flags.username || settings.exeTargetusername || settings.targetusername
+    const fileContent = fs.readFileSync(getAbsolutePath(filePath), 'utf8')
+    const firstLine = fileContent.split(/\n/, 1)[0]
+    if(firstLine.startsWith('//')) {
+      targetusername = firstLine.substring(2,).trim()
+    }
     let options: dxOptions = {}
     options.apexcodefile = getAbsolutePath(filePath)
     if (targetusername) options.targetusername = targetusername
