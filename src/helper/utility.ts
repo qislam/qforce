@@ -66,6 +66,21 @@ function getAbsolutePath(rawPath: string) {
   return relativePath
 }
 
+function getQueryFields(objectDefinition:looseObject, filter: boolean) {
+  let fieldNames = ''
+  let tooManyFields = objectDefinition.fields.length > 100
+  for (let field of objectDefinition.fields) {
+    if(filter || tooManyFields) {
+      if(!field.createable || 
+        field.type == 'reference' || 
+        (field.defaultedOnCreate && !field.updateable)) continue
+    }
+    if (fieldNames) fieldNames = fieldNames + ', ' + field.name
+    else fieldNames = field.name
+  }
+  return fieldNames
+}
+
 function getQueryAll(query: string, targetusername: string, filter: boolean) {
   function buildQuery(objectDefinition:looseObject) {
     let fieldNames = ''
@@ -85,7 +100,7 @@ function getQueryAll(query: string, targetusername: string, filter: boolean) {
     (resolve, reject) => {
       let sobjecttype = query.substring(query.toLowerCase().indexOf('from'),).split(/\s+/)[1].trim()
       let defPath = getAbsolutePath('.qforce/definitions/' + targetusername + '/' + sobjecttype + '.json')
-      if (!fs.existsSync(defPath)) {
+      if (fs.existsSync(defPath)) {
         buildQuery(JSON.parse(fs.readFileSync(defPath)))
         resolve(query)
       } else {

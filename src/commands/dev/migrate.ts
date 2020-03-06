@@ -203,6 +203,7 @@ export default class Migrate extends Command {
         }
       }
 
+      if (!loadResults) continue
       let options: dxOptions = {}
       let pollResults: any
 
