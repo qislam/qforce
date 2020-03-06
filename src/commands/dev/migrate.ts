@@ -202,27 +202,35 @@ export default class Migrate extends Command {
           else break
         }
       }
+
       let options: dxOptions = {}
-      options.targetusername = flags.destination
-      options.jobid = loadResults[0].jobId
-      options.batchid = loadResults[0].id
       let pollResults: any
+
       try {
+        options.targetusername = flags.destination
+        options.jobid = loadResults[0].jobId
+        options.batchid = loadResults[0].id
+
         pollResults = await pollBulkStatus(options
-                                          , step.bulkStatusRetries
-                                          , step.bulkStatusInterval)
+          , step.bulkStatusRetries
+          , step.bulkStatusInterval)
       } catch(err) {
         cli.action.stop()
         this.log('Error in getting bulk status: ' + JSON.stringify(err, null, 2))
-        if(migrationPlan.ignoreError) continue
-        else break
+        if(migrationPlan.ignoreError) {
+          const manualCheck = await cli.confirm('Check status in your org. Continue?')
+          if (manualCheck) continue
+          else break
+        } else { break }
       }
+
       if(pollResults && pollResults.numberRecordsFailed > 0) {
         cli.action.stop()
         this.log('Some records did not get uploaded:\n' + JSON.stringify(pollResults, null, 2))
         if(migrationPlan.ignoreError) continue
         else break
       }
+
       cli.action.stop()
     }
   }
