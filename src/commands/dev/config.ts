@@ -45,13 +45,15 @@ export default class DevConfig extends Command {
         {encoding: 'utf-8'}
       )
     }
+    if (fs.existsSync(getAbsolutePath('.qforce/settings.json'))) return
     const defaultSettings = {
       targetusername: "dev",
-      queryFilePath: "query.soql",
-      queryResultsPath: "queryResults.csv",
-      exeFilePath: "exe.cls",
-      exeResultsPath: "exe.log"
+      queryFilePath: ".qforce/query.soql",
+      queryResultsPath: ".qforce/query.csv",
+      exeFilePath: ".qforce/exe.cls",
+      exeResultsPath: ".qforce/exe.log"
     }
+    
     fs.writeFileSync(
       getAbsolutePath('.qforce/settings.json'), 
       JSON.stringify(defaultSettings, null, 2),
