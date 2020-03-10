@@ -99,6 +99,10 @@ export default class Migrate extends Command {
       }
       if (step.generateData && !step.query) {
         let generatedData = step.generateData.call(step)
+        if (generatedData.length < 1) {
+          const manualCheck = await cli.confirm('No data generated. Continue?')
+          if (!manualCheck) break
+        }
         generatedData.map(prepJsonForCsv)
         if(!fs.existsSync(path.join(process.cwd(), ...dataPath))) {
           fs.mkdirSync(path.join(process.cwd(), ...dataPath), {recursive: true})
@@ -183,6 +187,8 @@ export default class Migrate extends Command {
           cli.action.stop()
           this.log('Error uploading data: ' + JSON.stringify(err, null, 2))
           if(migrationPlan.ignoreError) continue
+          const manualCheck = await cli.confirm('Check status in your org. Continue?')
+          if (manualCheck) continue
           else break
         }
       } else if (flags.destination || migrationPlan.destination) {
@@ -192,7 +198,6 @@ export default class Migrate extends Command {
         options.csvfile = path.join(process.cwd(), ...dataPath, `${step.name}.csv`)
         if(step.externalid) options.externalid = step.externalid || step.externalId
         options.sobjecttype = step.sobjecttype || step.sObjectType
-        let loadResults: any
         try {
           loadResults = await sfdx.data.bulkUpsert(options)
         } catch(err) {
@@ -200,6 +205,10 @@ export default class Migrate extends Command {
           this.log('Error uploading data: ' + JSON.stringify(err, null, 2))
           if(migrationPlan.ignoreError) continue
           else break
+        }
+        if (!loadResults) {
+          const manualCheck = await cli.confirm('Check status in your org. Continue?')
+          if (manualCheck) continue
         }
       }
 
@@ -218,17 +227,17 @@ export default class Migrate extends Command {
       } catch(err) {
         cli.action.stop()
         this.log('Error in getting bulk status: ' + JSON.stringify(err, null, 2))
-        if(migrationPlan.ignoreError) {
-          const manualCheck = await cli.confirm('Check status in your org. Continue?')
-          if (manualCheck) continue
-          else break
-        } else { break }
+        const manualCheck = await cli.confirm('Check status in your org. Continue?')
+        if (manualCheck) continue
+        else break
       }
 
       if(pollResults && pollResults.numberRecordsFailed > 0) {
         cli.action.stop()
         this.log('Some records did not get uploaded:\n' + JSON.stringify(pollResults, null, 2))
         if(migrationPlan.ignoreError) continue
+        const manualCheck = await cli.confirm('Continue?')
+        if (manualCheck) continue
         else break
       }
 

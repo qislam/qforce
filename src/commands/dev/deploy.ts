@@ -34,7 +34,8 @@ export default class DevDeploy extends Command {
     }
     const featureBranch = args.featureBranch || flags.lastDeployCommit || settings.lastDeployCommit
     const developBranch = args.developBranch || flags.diff? 'HEAD' : settings.developBranch
-    
+    const targetusername = flags.username || settings.targetusername
+
     let diff
     if (flags.diff) {
       diff = await execa('git', ['diff', '--name-only', featureBranch, developBranch])
@@ -74,7 +75,7 @@ export default class DevDeploy extends Command {
         })
       }
     }
-
-    execa.command('sfdx force:source:deploy -p .qforce/deploy').stdout.pipe(process.stdout)
+    let deployCommand = 'sfdx force:source:deploy -p .qforce/deploy -u ' + targetusername
+    execa.command(deployCommand).stdout.pipe(process.stdout)
   }
 }
