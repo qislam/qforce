@@ -23,10 +23,15 @@ export default class DevDeploy extends Command {
   async run() {
     cli.action.start('Deploying feature ')
     const {args, flags} = this.parse(DevDeploy)
-    let settings
+    let settings, sfdxConfig
     if (fs.existsSync(getAbsolutePath('.qforce/settings.json'))) {
       settings = JSON.parse(
         fs.readFileSync(getAbsolutePath('.qforce/settings.json'))
+      )
+    }
+    if (fs.existsSync(path.join(process.cwd(), '.sfdx', 'sfdx-config.json'))) {
+      sfdxConfig = JSON.parse(
+        fs.readFileSync(path.join(process.cwd(), '.sfdx', 'sfdx-config.json'))
       )
     }
     if (fs.existsSync(getAbsolutePath('.qforce/deploy'))) {
@@ -34,7 +39,7 @@ export default class DevDeploy extends Command {
     }
     const featureBranch = args.featureBranch || flags.lastDeployCommit || settings.lastDeployCommit
     const developBranch = args.developBranch || flags.diff? 'HEAD' : settings.developBranch
-    const targetusername = flags.username || settings.targetusername
+    const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
 
     let diff
     if (flags.diff) {

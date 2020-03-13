@@ -24,15 +24,22 @@ export default class Exe extends Command {
   async run() {
     cli.action.start('Executing anonymous script')
     const {flags} = this.parse(Exe)
-    let settings
+    let settings, sfdxConfig
     if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
       settings = JSON.parse(
         fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
       )
     }
+
+    if (fs.existsSync(path.join(process.cwd(), '.sfdx', 'sfdx-config.json'))) {
+      sfdxConfig = JSON.parse(
+        fs.readFileSync(path.join(process.cwd(), '.sfdx', 'sfdx-config.json'))
+      )
+    }
+
     const filePath = flags.file || settings.exeFilePath || 'exe.cls'
     const resultPath = flags.result || settings.exeResultsPath || 'exe.log'
-    let targetusername = flags.username || settings.exeTargetusername || settings.targetusername
+    let targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
     const fileContent = fs.readFileSync(getAbsolutePath(filePath), 'utf8')
     const firstLine = fileContent.split(/\n/, 1)[0]
     if(firstLine.startsWith('//')) {

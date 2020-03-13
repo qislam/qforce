@@ -26,12 +26,19 @@ export default class Query extends Command {
   async run() {
     cli.action.start('Querying data')
     const {flags} = this.parse(Query)
-    let settings
+    let settings, sfdxConfig
     if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
       settings = JSON.parse(
         fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
       )
     }
+
+    if (fs.existsSync(path.join(process.cwd(), '.sfdx', 'sfdx-config.json'))) {
+      sfdxConfig = JSON.parse(
+        fs.readFileSync(path.join(process.cwd(), '.sfdx', 'sfdx-config.json'))
+      )
+    }
+
     const filePath = flags.file || settings.queryFilePath || 'query.soql'
     const resultPath = flags.result || settings.queryResultsPath || 'query.csv'
     if (resultPath.includes('/')) {
@@ -42,7 +49,7 @@ export default class Query extends Command {
       }
     }
     
-    let targetusername = flags.username || settings.exeTargetusername || settings.targetusername
+    let targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
     let queryString = flags.query || fs.readFileSync(getAbsolutePath(filePath), 'utf8')
 
     if (queryString.startsWith('//')) {
