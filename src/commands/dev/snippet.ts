@@ -46,7 +46,7 @@ export default class DevSnippet extends Command {
         qforceSnippets[key] = migrateSnippets[key]
       }
     }
-    if (!flags.alias) {
+    if (!flags.init && !flags.alias) {
       this.log('Must provide alias to proceed.')
       return
     }
@@ -56,15 +56,15 @@ export default class DevSnippet extends Command {
     } else if (flags.exe) {
       filePath = settings.exeFilePath
     } 
-    if (fs.existsSync(getAbsolutePath(filePath))) {
+    if (filePath && fs.existsSync(getAbsolutePath(filePath))) {
       let content = fs.readFileSync(getAbsolutePath(filePath), 'utf8')
       let snippet: looseObject = {}
       let key = flags.alias || 'q1'
       snippet.prefix = key
       snippet.body = content.split('\n')
       qforceSnippets[key] = snippet
-    } else {
-      this.log('No path found')
+    } else if (filePath) {
+      this.log('Path provided lead no where...')
     }
 
     fs.writeFileSync(
