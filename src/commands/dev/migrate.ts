@@ -46,6 +46,9 @@ export default class Migrate extends Command {
       return
     }
     let file = flags.file || 'migrationPlan.js'
+    if(!fs.existsSync(getAbsolutePath(file)) && settings.migrateBasePath) {
+      file = settings.migrateBasePath + file
+    }
     if(!fs.existsSync(getAbsolutePath(file))) {
       this.log('No plan file provided. Run "qforce dev:migrate --sample" to get a sample.')
     }
