@@ -1,6 +1,7 @@
 import {Command, flags} from '@oclif/command'
 import {dxOptions, looseObject} from '../../helper/interfaces'
 import {getAbsolutePath} from '../../helper/utility'
+import {migrateSnippets} from '../../helper/snippets'
 const path = require('path')
 const fs = require('fs')
 
@@ -11,7 +12,7 @@ export default class DevSnippet extends Command {
     help: flags.help({char: 'h'}),
   }
 
-  static args = [{name: 'file'}]
+  static args = []
 
   async run() {
     const {args, flags} = this.parse(DevSnippet)
@@ -25,5 +26,18 @@ export default class DevSnippet extends Command {
     if (fs.existsSync(getAbsolutePath('.vscode/qforce.code-snippets'))) {
       qforceSnippets = JSON.parse(fs.readFileSync(getAbsolutePath('.vscode/qforce.code-snippets')))
     }
+    if (!qforceSnippets) {
+      qforceSnippets = migrateSnippets
+    } else {
+      for (let key in migrateSnippets) {
+        qforceSnippets[key] = migrateSnippets[key]
+      }
+    }
+    fs.writeFileSync(
+      getAbsolutePath('.vscode/qforce.code-snippets'), 
+      JSON.stringify(qforceSnippets, null, 2),
+      {encoding: 'utf-8'}
+    )
+
   }
 }

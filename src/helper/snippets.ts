@@ -1,6 +1,6 @@
 import { looseObject } from './interfaces'
 
-const qforceSnippet: looseObject = {
+const migrateSnippets: looseObject = {
 	migrate: {
 		prefix: "migrate",
 		body: [
@@ -101,4 +101,4 @@ const qforceSnippet: looseObject = {
 	}
 }
 
-export {qforceSnippet}
+export {migrateSnippets}
