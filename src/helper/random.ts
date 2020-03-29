@@ -15,7 +15,7 @@ let random: looseObject = {
         if (name.length < 2) return name.toUpperCase()
         return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()
     },
-    string: function string(pattern = '*', length = 8) {
+    string: function string(pattern: string = '*', length: number = 8) {
         return randomatic(pattern, length)
     },
     get word() {
