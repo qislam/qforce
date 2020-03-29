@@ -9,6 +9,7 @@ import {deleteFolderRecursive,
   setStepReferences} from '../../helper/utility'
 import {dxOptions, looseObject, migrationStep} from '../../helper/interfaces'
 import {allSamples} from '../../helper/migPlanSamples'
+import {random} from '../../helper/random'
 const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
@@ -82,6 +83,7 @@ export default class Migrate extends Command {
         if (step.name != flags.name) continue
       }
       this.log(i + ' - Step ' + step.name + ' - Started')
+      step['random'] = random
       if (step.references) {
         step = setStepReferences(step, basePath.join('/'))
       }
