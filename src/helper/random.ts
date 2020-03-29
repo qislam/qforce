@@ -2,6 +2,7 @@ import {firstNames, lastNames} from './nameData'
 import {streetNames} from './streetData'
 import {cityNames} from './cityData'
 import {stateNames} from './statesData'
+import {words} from './wordData'
 import { looseObject } from './interfaces'
 
 const randomatic = require('randomatic')
@@ -16,6 +17,25 @@ let random: looseObject = {
     },
     string: function string(pattern = '*', length = 8) {
         return randomatic(pattern, length)
+    },
+    get word() {
+        return words[~~(Math.random() * words.length)]
+    },
+    get sentence() {
+        let sentence = this.capitalize(this.word)
+        let count = ~~(Math.random() * 5) + 3
+        for (let i = 0; i < count; i++) {
+            sentence += ' ' + this.word
+        }
+        return sentence + '. '
+    },
+    get paragraph() {
+        let para = this.sentence
+        let count = ~~(Math.random() * 5) + 3
+        for (let i = 0; i < count; i++) {
+            para += this.sentence
+        }
+        return para + '\n'
     },
     get firstName() {
         return this.find(firstNames)
