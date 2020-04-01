@@ -18,7 +18,7 @@ let random: looseObject = {
     getString: function getString(pattern: string = 'a', length: number = ~~(Math.random()*9)+3) {
         return randomatic(pattern, length)
     },
-    getDate: function getDate(min = -365*21, max = -365*65) {
+    getDate: function getDate(min: number = -365*21, max: number = -365*65) {
         let count = ~~(Math.random() * max) + min
         let now = Date.now()
         let result = new Date(now + count * 24 * 60 * 60 * 1000)
