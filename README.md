@@ -18,7 +18,7 @@ $ npm install -g qforce
 $ qforce COMMAND
 running command...
 $ qforce (-v|--version|version)
-qforce/0.5.1 darwin-x64 node-v10.13.0
+qforce/0.5.2 darwin-x64 node-v10.13.0
 $ qforce --help [COMMAND]
 USAGE
   $ qforce COMMAND
