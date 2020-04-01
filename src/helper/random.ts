@@ -2,7 +2,7 @@ import {firstNames, lastNames} from './nameData'
 import {streetNames} from './streetData'
 import {cityNames} from './cityData'
 import {stateNames} from './statesData'
-import {words} from './wordData'
+import {loremIpsum, polishWords, spanishWords, englishWords} from './wordData'
 import { looseObject } from './interfaces'
 
 const randomatic = require('randomatic')
@@ -15,11 +15,37 @@ let random: looseObject = {
         if (name.length < 2) return name.toUpperCase()
         return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()
     },
-    string: function string(pattern: string = '*', length: number = 8) {
+    getString: function getString(pattern: string = 'a', length: number = ~~(Math.random()*9)+3) {
         return randomatic(pattern, length)
     },
+    get useRealWords() {
+        if (this._useRealWords) return this._useRealWords
+        else return false
+    },
+    set useRealWords(value) {
+        this._useRealWords = value
+    },
+    get language() {
+        if (this._language) return this._language
+        else return null
+    },
+    set language(value) {
+        this._language = value
+    },
+    get string() {
+        //let count = ~~(Math.random() * 15) + 1
+        return this.getString()
+    },
     get word() {
-        return words[~~(Math.random() * words.length)]
+        if (this.language == 'spanish') {
+            return spanishWords[~~(Math.random() * spanishWords.length)]
+        } else if (this.language == 'polish') {
+            return polishWords[~~(Math.random() * polishWords.length)]
+        } else if (this.language == 'english') {
+            return englishWords[~~(Math.random() * englishWords.length)]
+        } else {
+            return loremIpsum[~~(Math.random() * loremIpsum.length)]
+        }
     },
     get sentence() {
         let sentence = this.capitalize(this.word)
@@ -35,7 +61,7 @@ let random: looseObject = {
         for (let i = 0; i < count; i++) {
             para += this.sentence
         }
-        return para + '\n'
+        return para
     },
     get firstName() {
         return this.find(firstNames)
