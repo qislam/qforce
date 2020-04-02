@@ -30,9 +30,6 @@ export default class DevSnippet extends Command {
       )
     }
 
-    if (!fs.existsSync(getAbsolutePath('.qforce/definitions/'))) {
-      this.log('No object definitions found. First run qforce dev:describe command.')
-    }
     if (!fs.existsSync(getAbsolutePath('.vscode'))) {
       fs.mkdirSync(getAbsolutePath('.vscode'), {recursive: true})
     }

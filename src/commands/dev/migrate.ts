@@ -1,5 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
+import * as moment from 'moment'
 import {deleteFolderRecursive, 
   getAbsolutePath, 
   getQueryAll, 
@@ -63,6 +64,11 @@ export default class Migrate extends Command {
     refPath.push('reference')
     
     const migrationPlan = await import(getAbsolutePath(file))
+    const globalVars: looseObject = {
+      moment: moment,
+      random: random,
+      plan: migrationPlan
+    }
     // Clear data folder will delete all existing csv files in data folder
     if(migrationPlan.clearDataFolder) {
       if(fs.existsSync(path.join(process.cwd(), ...dataPath))) {
@@ -83,7 +89,10 @@ export default class Migrate extends Command {
         if (step.name != flags.name) continue
       }
       this.log(i + ' - Step ' + step.name + ' - Started')
-      step['random'] = random
+      //step['random'] = random
+      for (let key in globalVars) {
+        step[key] = globalVars[key]
+      }
       if (step.references) {
         step = setStepReferences(step, basePath.join('/'))
       }
