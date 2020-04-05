@@ -15,6 +15,7 @@ export default class DevPatch extends Command {
       description: 'Set to true if want to apply calculated patch to current branch.'}),
     patchPath: flags.string({char: 'p', description: 'Path to save the patch file.'}),
     syncUp: flags.boolean({char: 's', description: 'Set to true if need to retrieve'}),
+    partialCommit: flags.string({char: 'c', description: 'Commit hash for calculating partial patch.'})
   }
 
   static args = [{name: 'featureBranch'}, {name: 'developBranch'}]
@@ -44,6 +45,11 @@ export default class DevPatch extends Command {
       const filePaths = diffFiles.stdout.replace(/\n/g, ' ')
       const commandString = 'git diff ' + baseCommit + ' ' + developBranch + ' ' + filePaths
       diff = await execa.command(commandString)
+    } else if (flags.partialCommit) {
+      const diffFiles = await execa('git', ['diff', '--name-only', baseCommit, featureBranch])
+      const filePaths = diffFiles.stdout.replace(/\n/g, ' ')
+      const commandString = 'git diff ' + flags.partialCommit + ' ' + featureBranch + ' ' + filePaths
+      diff = await execa.command(commandString)
     } else {
       diff = await execa('git', ['diff', baseCommit, featureBranch])
     }
@@ -51,10 +57,12 @@ export default class DevPatch extends Command {
     const diffContent = diff.stdout + '\n'
     fs.writeFileSync(getAbsolutePath(patchPath), diffContent, {encoding: 'utf-8'})
     if (flags.apply) {
-      await execa('git', 
-        ['apply', '--reject', '--whitespace=fix', getAbsolutePath(patchPath)]
-
-      )
+      try {
+        await execa('git', ['apply', '--reject', '--whitespace=fix', getAbsolutePath(patchPath)])
+      } catch (error) {
+        this.log('Check for .rej files and resolve issues before proceeding.')
+        this.log(error)
+      }
     } 
     cli.action.stop()
   }
