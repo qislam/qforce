@@ -15,6 +15,7 @@ export default class DevDeploy extends Command {
     help: flags.help({char: 'h'}),
     username: flags.string({char: 'u'}),
     diff: flags.boolean({char: 'd', description: 'Set to true if passing commit hash.'}),
+    isCommit: flags.boolean({char: 'c', description: 'Set to true if deploying a single commit.'}),
     lastDeployCommit: flags.string({description: 'Commit hash of the last commit.'}),
   }
 
@@ -44,6 +45,9 @@ export default class DevDeploy extends Command {
     let diff
     if (flags.diff) {
       diff = await execa('git', ['diff', '--name-only', featureBranch, developBranch])
+    } else if (flags.isCommit) {
+      let commitFiles = 'git diff-tree --no-commit-id --name-only -r ' + featureBranch
+      diff = await execa.command(commitFiles)
     } else {
       const mergeBase = await execa('git', ['merge-base', featureBranch, developBranch])
       const baseCommit = mergeBase.stdout

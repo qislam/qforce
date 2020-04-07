@@ -64,6 +64,12 @@ export default class Migrate extends Command {
     refPath.push('reference')
     
     const migrationPlan = await import(getAbsolutePath(file))
+
+    if (migrationPlan.calculateFlags) {
+      migrationPlan['moment'] = moment
+      migrationPlan['random'] = random
+      migrationPlan.calculateFlags.call(migrationPlan)
+    }
     const globalVars: looseObject = {
       moment: moment,
       random: random,

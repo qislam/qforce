@@ -12,7 +12,7 @@ export default class Query extends Command {
   static aliases = ['query', 'q', 'dx:query']
 
   static examples = [
-    `$ q dx:query`,
+    `$ qforce dx:query`,
   ]
 
   static flags = {
