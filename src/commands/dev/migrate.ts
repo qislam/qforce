@@ -242,8 +242,8 @@ export default class Migrate extends Command {
         options.batchid = loadResults[0].id
 
         pollResults = await pollBulkStatus(options
-          , step.bulkStatusRetries
-          , step.bulkStatusInterval)
+          , migrationPlan.bulkStatusRetries
+          , migrationPlan.bulkStatusInterval)
       } catch(err) {
         cli.action.stop()
         this.log('Error in getting bulk status: ' + JSON.stringify(err, null, 2))
