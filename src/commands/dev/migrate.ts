@@ -220,9 +220,10 @@ export default class Migrate extends Command {
         options.sobjecttype = step.sobjecttype || step.sObjectType
         try {
           loadResults = await sfdx.data.bulkUpsert(options)
+          this.log('Load Results: ' + JSON.stringify(loadResults, null, 4))
         } catch(err) {
           cli.action.stop()
-          this.log('Error uploading data: ' + JSON.stringify(err, null, 2))
+          this.log('Error uploading data: ' + JSON.stringify(err, null, 4))
           if(migrationPlan.ignoreError) continue
           else break
         }
@@ -246,7 +247,7 @@ export default class Migrate extends Command {
           , migrationPlan.bulkStatusInterval)
       } catch(err) {
         cli.action.stop()
-        this.log('Error in getting bulk status: ' + JSON.stringify(err, null, 2))
+        this.log('Error in getting bulk status: ' + JSON.stringify(err, null, 4))
         const manualCheck = await cli.confirm('Check status in your org. Continue?')
         if (manualCheck) continue
         else break
