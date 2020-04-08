@@ -4,6 +4,7 @@ import {getAbsolutePath} from '../../helper/utility'
 import {migrateSnippets} from '../../helper/snippets'
 const path = require('path')
 const fs = require('fs')
+const _ = require('lodash')
 
 export default class DevSnippet extends Command {
   static description = 'Generates VS Code snippets file based on sObject definitions'
@@ -55,10 +56,17 @@ export default class DevSnippet extends Command {
     } 
     if (filePath && fs.existsSync(getAbsolutePath(filePath))) {
       let content = fs.readFileSync(getAbsolutePath(filePath), 'utf8')
+      if (content) content += '$0'
       let snippet: looseObject = {}
       let key = flags.alias || 'q1'
+      let body = content.split('\n')
+      _.remove(body, (
+        line: string) => {
+          return line.startsWith('//') || line.trim() === ''
+        }
+      )
       snippet.prefix = key
-      snippet.body = content.split('\n')
+      snippet.body = body
       qforceSnippets[key] = snippet
     } else if (filePath) {
       this.log('Path provided lead no where...')

@@ -15,6 +15,7 @@ const sfdx = require('sfdx-node')
 const path = require('path')
 const fs = require('fs')
 const csvjson = require('csvjson')
+const lodash = require('lodash')
 
 export default class Migrate extends Command {
   static description = 'Migrate data from one org to another based on a migration plan.'
@@ -27,6 +28,8 @@ export default class Migrate extends Command {
     sample: flags.boolean({description: 'Copy sample migration plan files to current directory.'}),
     source: flags.string({char: 's', description: 'source org username or alias.'}),
     name: flags.string({char: 'n', description: 'Name of the step to execute.'}),
+    clearDataFolder: flags.boolean(),
+    clearRefFolder: flags.boolean(),
   }
 
   async run() {
@@ -62,18 +65,32 @@ export default class Migrate extends Command {
 
     let refPath = basePath.slice()
     refPath.push('reference')
+
+    if(flags.clearDataFolder) {
+      if(fs.existsSync(path.join(process.cwd(), ...dataPath))) {
+        deleteFolderRecursive(dataPath.join('/'))
+      }
+    }
+    if(flags.clearRefFolder) {
+      if(fs.existsSync(path.join(process.cwd(), ...refPath))) {
+        deleteFolderRecursive(refPath.join('/'))
+      }
+    }
     
     const migrationPlan = await import(getAbsolutePath(file))
 
-    if (migrationPlan.calculateFlags) {
-      migrationPlan['moment'] = moment
-      migrationPlan['random'] = random
-      migrationPlan.calculateFlags.call(migrationPlan)
-    }
     const globalVars: looseObject = {
       moment: moment,
       random: random,
+      lodash: lodash,
       plan: migrationPlan
+    }
+
+    if (migrationPlan.calculateFlags) {
+      for (let key in globalVars) {
+        if (key != 'plan') migrationPlan[key] = globalVars[key]
+      }
+      migrationPlan.calculateFlags.call(migrationPlan)
     }
     // Clear data folder will delete all existing csv files in data folder
     if(migrationPlan.clearDataFolder) {
