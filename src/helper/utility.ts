@@ -160,10 +160,8 @@ function pollBulkStatus(options: dxOptions, retries = 3, interval = 5000) {
     } catch(err) {
       console.log(JSON.stringify(err, null, 4))
     }
-    
-    console.log(JSON.stringify(statusResults, null, 4))
-    if(statusResults && statusResults[0].state == 'Completed') {
-        resolve(statusResults[0]);
+    if(statusResults && statusResults.result[0].state == 'Completed') {
+        resolve(statusResults.result[0]);
     }
     // If the condition isn't met but the timeout hasn't elapsed, go again
     else if (Number(new Date()) < endTime) {
