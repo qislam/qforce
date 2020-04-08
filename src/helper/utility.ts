@@ -156,6 +156,7 @@ function pollBulkStatus(options: dxOptions, retries = 3, interval = 5000) {
   let statusResults: any
   async function checkResults(resolve: any, reject: any) {
     statusResults = await sfdx.data.bulkStatus(options) 
+    console.log(JSON.stringify(statusResults, null, 4))
     if(statusResults && statusResults[0].state == 'Completed') {
         resolve(statusResults[0]);
     }
@@ -165,7 +166,7 @@ function pollBulkStatus(options: dxOptions, retries = 3, interval = 5000) {
     }
     // Didn't match and too much time, reject!
     else {
-        reject(new Error('Timed out:\n' + JSON.stringify(statusResults, null, 4)));
+        reject(new Error(statusResults[0]));
     }
   };
 
