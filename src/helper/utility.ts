@@ -3,6 +3,7 @@ const path = require('path')
 const fs = require('fs')
 const sfdx = require('sfdx-node')
 const csvjson = require('csvjson')
+const execa = require('execa')
 
 function deleteFolderRecursive(pathString: string) {
   let dataPath = pathString.split('/')
@@ -156,7 +157,8 @@ function pollBulkStatus(options: dxOptions, retries = 3, interval = 5000) {
   let statusResults: any
   async function checkResults(resolve: any, reject: any) {
     try {
-      statusResults = await sfdx.data.bulkStatus(options) 
+      let command = `sfdx force:data:bulk:status --json -u ${options.targetusername} -b ${options.batchid} -i ${options.jobid}`
+      statusResults = await execa.command(command)
     } catch(err) {
       console.log(JSON.stringify(err, null, 4))
     }
