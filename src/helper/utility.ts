@@ -156,7 +156,6 @@ function pollBulkStatus(options: dxOptions, retries = 3, interval = 5000) {
   let statusResults: any
   async function checkResults(resolve: any, reject: any) {
     statusResults = await sfdx.data.bulkStatus(options) 
-    console.log(statusResults)
     if(statusResults && statusResults[0].state == 'Completed') {
         resolve(statusResults[0]);
     }
