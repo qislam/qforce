@@ -245,6 +245,7 @@ export default class Migrate extends Command {
         pollResults = await pollBulkStatus(options
           , migrationPlan.bulkStatusRetries
           , migrationPlan.bulkStatusInterval)
+        this.log('Poll Results: ' + JSON.stringify(pollResults, null, 4))
       } catch(err) {
         cli.action.stop()
         this.log('Error in getting bulk status: ' + JSON.stringify(err, null, 4))
