@@ -238,7 +238,7 @@ export default class Migrate extends Command {
       let pollResults: any
 
       try {
-        options.targetusername = flags.destination
+        options.targetusername = flags.destination || migrationPlan.destination
         options.jobid = loadResults[0].jobId
         options.batchid = loadResults[0].id
 

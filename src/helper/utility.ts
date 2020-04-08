@@ -3,7 +3,6 @@ const path = require('path')
 const fs = require('fs')
 const sfdx = require('sfdx-node')
 const csvjson = require('csvjson')
-const execa = require('execa')
 
 function deleteFolderRecursive(pathString: string) {
   let dataPath = pathString.split('/')
@@ -156,14 +155,10 @@ function pollBulkStatus(options: dxOptions, retries = 3, interval = 5000) {
   let endTime = Number(new Date()) + retries * interval
   let statusResults: any
   async function checkResults(resolve: any, reject: any) {
-    try {
-      let command = `sfdx force:data:bulk:status --json -u ${options.targetusername} -b ${options.batchid} -i ${options.jobid}`
-      statusResults = await execa.command(command)
-    } catch(err) {
-      console.log(JSON.stringify(err, null, 4))
-    }
-    if(statusResults && statusResults.result[0].state == 'Completed') {
-        resolve(statusResults.result[0]);
+    statusResults = await sfdx.data.bulkStatus(options) 
+    console.log(statusResults)
+    if(statusResults && statusResults[0].state == 'Completed') {
+        resolve(statusResults[0]);
     }
     // If the condition isn't met but the timeout hasn't elapsed, go again
     else if (Number(new Date()) < endTime) {
@@ -171,7 +166,7 @@ function pollBulkStatus(options: dxOptions, retries = 3, interval = 5000) {
     }
     // Didn't match and too much time, reject!
     else {
-        reject(new Error(statusResults));
+        reject(new Error('Timed out:\n' + JSON.stringify(statusResults, null, 4)));
     }
   };
 
