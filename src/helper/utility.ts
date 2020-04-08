@@ -153,9 +153,9 @@ function poll(fn: any, timeout: number, interval: number, context: any) {
 
 function pollBulkStatus(options: dxOptions, retries = 3, interval = 5000) {
   let endTime = Number(new Date()) + retries * interval
-
+  let statusResults: any
   async function checkResults(resolve: any, reject: any) {
-    let statusResults = await sfdx.data.bulkStatus(options) 
+    statusResults = await sfdx.data.bulkStatus(options) 
     if(statusResults && statusResults[0].state == 'Completed') {
         resolve(statusResults[0]);
     }
@@ -165,7 +165,7 @@ function pollBulkStatus(options: dxOptions, retries = 3, interval = 5000) {
     }
     // Didn't match and too much time, reject!
     else {
-        reject(new Error('Timed out:\n' + JSON.stringify(statusResults, null, 2)));
+        reject(new Error('Timed out:\n' + JSON.stringify(statusResults, null, 4)));
     }
   };
 
