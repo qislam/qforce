@@ -6,6 +6,7 @@ const sfdx = require('sfdx-node')
 const execa = require('execa')
 const path = require('path')
 const fs = require('fs')
+const _ = require('lodash')
 
 export default class DevDeploy extends Command {
   static description = 'Deploy source components included in a feature branch.'
@@ -42,18 +43,35 @@ export default class DevDeploy extends Command {
     const developBranch = args.developBranch || flags.diff? 'HEAD' : settings.developBranch
     const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
 
-    let diff
+    let diffFilesList: any
     if (flags.diff) {
-      diff = await execa('git', ['diff', '--name-only', featureBranch, developBranch])
+      let diff = await execa('git', ['diff', '--name-only', featureBranch, developBranch])
+      diffFilesList = diff.stdout.split('\n')
     } else if (flags.isCommit) {
       let commitFiles = 'git diff-tree --no-commit-id --name-only -r ' + featureBranch
-      diff = await execa.command(commitFiles)
+      let diff = await execa.command(commitFiles)
+      //this.log('diff original:\n' + diff.stdout)
+      if (diff.stdout === "") {
+        //this.log('Looks like a merge commit. Will calculate diff with parents.')
+        let getParents = `git rev-list --parents -n 1 ${featureBranch}`
+        let parents = await execa.command(getParents)
+        let parentList = parents.stdout.split(' ')
+        if (parentList.length < 3) {
+          this.log('Could not calculate diff. Will abort.')
+          return
+        }
+        let getDiff1 = `git diff-tree --no-commit-id --name-only -r ${featureBranch} ${parentList[1]}`
+        let diff1 = await execa.command(getDiff1)
+        let getDiff2 = `git diff-tree --no-commit-id --name-only -r ${featureBranch} ${parentList[2]}`
+        let diff2 = await execa.command(getDiff2)
+        diffFilesList = _.union(diff1.stdout.split('\n'), diff2.stdout.split('\n'))
+      }
     } else {
       const mergeBase = await execa('git', ['merge-base', featureBranch, developBranch])
       const baseCommit = mergeBase.stdout
-      diff = await execa('git', ['diff', '--name-only', baseCommit, featureBranch])
+      let diff = await execa('git', ['diff', '--name-only', baseCommit, featureBranch])
+      diffFilesList = diff.stdout.split('\n')
     }
-    const diffFilesList = diff.stdout.split('\n')
 
     for (let sourceFilePath of diffFilesList) {
       if(!fs.existsSync(sourceFilePath)) continue
