@@ -60,7 +60,7 @@ export default class Query extends Command {
 
     queryString = queryString.trim()
     if (!queryString.toLowerCase().includes('select')) {
-      let sobjectMapPath = getAbsolutePath('.qforce/definitions/' + targetusername + '/sobjectsByPrefix.json')
+      let sobjectMapPath = getAbsolutePath('.qforce/definitions/sobjectsByPrefix.json')
       if (!fs.existsSync(sobjectMapPath)) {
         this.log('Mapping file does not exist for username ' + targetusername)
         return

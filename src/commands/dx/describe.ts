@@ -28,8 +28,8 @@ export default class DxDescribe extends Command {
       )
     }
     const targetusername = flags.username || settings.targetusername
-    if (!fs.existsSync(getAbsolutePath('.qforce/definitions/' + targetusername))) {
-      fs.mkdirSync(getAbsolutePath('.qforce/definitions/' + targetusername), {recursive: true})
+    if (!fs.existsSync(getAbsolutePath('.qforce/definitions'))) {
+      fs.mkdirSync(getAbsolutePath('.qforce/definitions'), {recursive: true})
     }
     let objectsToDescribe = []
     if (flags.all) {
@@ -45,6 +45,11 @@ export default class DxDescribe extends Command {
       settings.exeResultsPath || 
       'exe.log'
     let sobjectByPrefix: looseObject = {}
+    if (fs.existsSync(getAbsolutePath('.qforce/definitions/sobjectsByPrefix.json'))) {
+      sobjectByPrefix = JSON.parse(
+        fs.readFileSync(getAbsolutePath('.qforce/definitions/sobjectsByPrefix.json'))
+      )
+    }
     for (let sobject of objectsToDescribe) {
       let options: dxOptions = {}
       if (targetusername) options.targetusername = targetusername
@@ -52,8 +57,7 @@ export default class DxDescribe extends Command {
       let describeResults = await sfdx.schema.sobjectDescribe(options)
       sobjectByPrefix[describeResults.keyPrefix] = sobject
       fs.writeFileSync(
-        getAbsolutePath('.qforce/definitions/' + 
-          targetusername + '/' + sobject.toLowerCase() + '.json'),
+        getAbsolutePath('.qforce/definitions/' + sobject.toLowerCase() + '.json'),
         JSON.stringify(describeResults, null, 2),
         {encoding: 'utf-8'})
       if (flags.sobject) {
@@ -64,8 +68,7 @@ export default class DxDescribe extends Command {
       }
     }
     fs.writeFileSync(
-      getAbsolutePath('.qforce/definitions/' + 
-        targetusername + '/sobjectsByPrefix' + '.json'),
+      getAbsolutePath('.qforce/definitions/sobjectsByPrefix.json'),
       JSON.stringify(sobjectByPrefix, null, 2),
       {encoding: 'utf-8'})
     cli.action.stop()
