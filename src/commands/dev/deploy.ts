@@ -43,7 +43,7 @@ export default class DevDeploy extends Command {
     const developBranch = args.developBranch || flags.diff? 'HEAD' : settings.developBranch
     const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
 
-    let diffFilesList: any
+    let diffFilesList: string[] = []
     if (flags.diff) {
       let diff = await execa('git', ['diff', '--name-only', featureBranch, developBranch])
       diffFilesList = diff.stdout.split('\n')
@@ -59,12 +59,13 @@ export default class DevDeploy extends Command {
         if (parentList.length < 3) {
           this.log('Could not calculate diff. Will abort.')
           return
+        } else {
+          for (let i = 1; i < parentList.length; i++) {
+            let getDiff = `git diff-tree --no-commit-id --name-only -r ${featureBranch} ${parentList[i]}`
+            let diff = await execa.command(getDiff)
+            diffFilesList = _.union(diffFilesList, diff.stdout.split('\n'))
+          }
         }
-        let getDiff1 = `git diff-tree --no-commit-id --name-only -r ${featureBranch} ${parentList[1]}`
-        let diff1 = await execa.command(getDiff1)
-        let getDiff2 = `git diff-tree --no-commit-id --name-only -r ${featureBranch} ${parentList[2]}`
-        let diff2 = await execa.command(getDiff2)
-        diffFilesList = _.union(diff1.stdout.split('\n'), diff2.stdout.split('\n'))
       }
     } else {
       const mergeBase = await execa('git', ['merge-base', featureBranch, developBranch])

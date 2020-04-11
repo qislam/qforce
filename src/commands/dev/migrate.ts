@@ -156,13 +156,14 @@ export default class Migrate extends Command {
             || step.isDelete 
             || flags.source 
             || migrationPlan.source
+            || step.source
           )) {
         cli.action.start(i + ' - Step ' + step.name + ' querying data')
         let targetusername;
         if (step.queryDestination || step.isDelete) {
-          targetusername = flags.destination || migrationPlan.destination
+          targetusername = flags.destination || migrationPlan.destination || step.destination
         } else {
-          targetusername = flags.source || migrationPlan.source
+          targetusername = flags.source || migrationPlan.source || step.source
         }
         let queryString: any = step.query
         if (queryString.includes('*')) {
@@ -214,7 +215,7 @@ export default class Migrate extends Command {
       if (step.isDelete) {
         cli.action.start(i + ' - Step ' + step.name + ' deleting data')
         let options: dxOptions = {}
-        options.targetusername = flags.destination || migrationPlan.destination
+        options.targetusername = flags.destination || migrationPlan.destination || step.destination
         options.csvfile = path.join(process.cwd(), ...dataPath, `${step.name}.csv`)
         options.sobjecttype = step.sobjecttype || step.sObjectType
         try {
@@ -228,10 +229,10 @@ export default class Migrate extends Command {
           if (manualCheck) continue
           else break
         }
-      } else if (flags.destination || migrationPlan.destination) {
+      } else if (flags.destination || migrationPlan.destination || step.destination) {
         cli.action.start(i + ' - Step ' + step.name + ' uploading data')
         let options: dxOptions = {}
-        options.targetusername = flags.destination || migrationPlan.destination
+        options.targetusername = flags.destination || migrationPlan.destination || step.destination
         options.csvfile = path.join(process.cwd(), ...dataPath, `${step.name}.csv`)
         if(step.externalid) options.externalid = step.externalid || step.externalId
         options.sobjecttype = step.sobjecttype || step.sObjectType
