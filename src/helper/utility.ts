@@ -98,7 +98,8 @@ function getQueryAll(query: string, targetusername: string, filter: boolean) {
   }
   return new Promise(
     (resolve, reject) => {
-      let sobjecttype = query.substring(query.toLowerCase().indexOf('from'),).split(/\s+/)[1].trim()
+      let sobjecttype = query.substring(query.toLowerCase().lastIndexOf('from'),).split(/\s+/)[1].trim()
+      console.log('sobjecttype: ' + sobjecttype)
       let defPath = getAbsolutePath('.qforce/definitions/' + sobjecttype + '.json')
       if (fs.existsSync(defPath)) {
         buildQuery(JSON.parse(fs.readFileSync(defPath)))
@@ -110,9 +111,20 @@ function getQueryAll(query: string, targetusername: string, filter: boolean) {
         })
         .then(
           (objectDefinition:looseObject) => {
-            buildQuery(objectDefinition)
-            resolve(query)
+            if (objectDefinition && objectDefinition.fields) {
+              buildQuery(objectDefinition)
+              resolve(query)
+            } else {
+              console.log(objectDefinition)
+              reject('Could not get fields for object definition. Got ' + objectDefinition)
+            }
           }
+        )
+        .catch(
+          (error: looseObject) => {
+            reject('Could not get object definition.\n' + error)
+          }
+          
         )
       }
     }
@@ -176,12 +188,14 @@ function prepJsonForCsv(line: looseObject) {
   if (line.attributes) delete line.attributes
   if (line.height) delete line.height
   for (let key of Object.keys(line)) {
+    //console.log(key + ': ' + line[key])
     if (line[key] == '\u001b[1mnull\u001b[22m') delete line[key]
+    if (line[key] === null) delete line[key]
     if (line[key] == 'null') delete line[key]
     if (line[key] === "") delete line[key]
     if (typeof line[key] === 'string') {
       line[key] = line[key].replace(/"/g, '""')
-    } else if (line[key] && line[key].attributes) {
+    } else if (line[key] && Object.keys(line[key])) {
       prepJsonForCsv(line[key])
     } 
   }

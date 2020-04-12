@@ -62,7 +62,7 @@ export default class Query extends Command {
     if (!queryString.toLowerCase().includes('select')) {
       let sobjectMapPath = getAbsolutePath('.qforce/definitions/sobjectsByPrefix.json')
       if (!fs.existsSync(sobjectMapPath)) {
-        this.log('Mapping file does not exist for username ' + targetusername)
+        cli.action.stop('Mapping file does not exist.')
         return
       }
       let sobjectByPrefix = JSON.parse(fs.readFileSync(sobjectMapPath))
@@ -70,8 +70,13 @@ export default class Query extends Command {
       queryString = 'SELECT * FROM ' + sobject + ' WHERE ID = \'' + queryString + '\''
     }
     if (queryString.includes('*')) {
+      try {
       queryString = await getQueryAll(queryString, targetusername, false)
       this.log('Complete Query: \n' + queryString)
+      } catch(err) {
+        cli.action.stop('Receied error: ' + err)
+        return
+      }
     }
     let options: dxOptions = {}
     options.query = queryString
