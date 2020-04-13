@@ -7,8 +7,14 @@ const fs = require('fs')
 const _ = require('lodash')
 
 export default class DevSnippet extends Command {
-  static description = 'Generates VS Code snippets file based on sObject definitions'
+  static description = 'Generates VS Code snippets to help using qforce.'
   static aliases = ['snippet', 'dev:snippet']
+
+  static examples = [
+    '$ qforce snippet --init //Creates a snippets file for saving qforce related snippets.',
+    '$ qforce snippet -q -a q_1 //Saves contents of queryFilePath into a snippet named q_1.',
+    '$ qforce snippet -q -e e_1 //Saves contents of exeFilePath into a snippet named e_1.',
+  ]
 
   static flags = {
     help: flags.help({char: 'h'}),
@@ -16,7 +22,7 @@ export default class DevSnippet extends Command {
     query: flags.boolean({char: 'q', description: 'Create alias for query at default query path.'}),
     exe: flags.boolean({char: 'e', description: 'Create alias for anonymous apex at default exe path.'}),
     alias: flags.string({char:'a', description: 'Alias for the snippet'}),
-    path: flags.string({char: 'p', description: 'Path to file that needs to be converted to snippet. Required if quory/exe flags not passed'})
+    path: flags.string({char: 'p', description: 'Path to file that needs to be converted to snippet. Required if query/exe flags not passed'})
   }
 
   static args = []

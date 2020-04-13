@@ -26,7 +26,7 @@ export default class Query extends Command {
   async run() {
     cli.action.start('Querying data')
     const {flags} = this.parse(Query)
-    let settings, sfdxConfig
+    let settings: any = {}, sfdxConfig: any = {}
     if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
       settings = JSON.parse(
         fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
@@ -82,6 +82,7 @@ export default class Query extends Command {
     options.query = queryString
     if (targetusername) options.targetusername = targetusername
     let queryResult = await sfdx.data.soqlQuery(options)
+    this.log(JSON.stringify(queryResult, null, 4))
     queryResult.records.map(prepJsonForCsv)
     fs.writeFileSync(
       getAbsolutePath(resultPath), 
