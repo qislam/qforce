@@ -16,6 +16,7 @@ const path = require('path')
 const fs = require('fs')
 const csvjson = require('csvjson')
 const lodash = require('lodash')
+const sha1 = require('js-sha1')
 
 export default class Migrate extends Command {
   static description = 'Migrate data from one org to another based on a migration plan.'
@@ -83,6 +84,7 @@ export default class Migrate extends Command {
       moment: moment,
       random: random,
       lodash: lodash,
+      sha1: sha1,
       plan: migrationPlan
     }
 
