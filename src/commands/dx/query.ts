@@ -82,7 +82,7 @@ export default class Query extends Command {
     options.query = queryString
     if (targetusername) options.targetusername = targetusername
     let queryResult = await sfdx.data.soqlQuery(options)
-    this.log(JSON.stringify(queryResult, null, 4))
+    //this.log(JSON.stringify(queryResult, null, 4))
     queryResult.records.map(prepJsonForCsv)
     fs.writeFileSync(
       getAbsolutePath(resultPath), 
