@@ -56,6 +56,15 @@ function filterQueryFields(queryString: string, targetusername: string, external
   return filteredQuery
 }
 
+function getProp(object: any, prop: string) {
+  if (object[prop]) return object[prop]
+  for (let key in object) {
+    if (key.toLowerCase() === prop.toLowerCase()) {
+      return object[key]
+    }
+  }
+}
+
 function getRelativePath(rawPath: string) {
   let relativePath:string = path.join(...rawPath.trim().split('/'))
   return relativePath
@@ -215,6 +224,7 @@ export {
   filterQueryFields, 
   getAbsolutePath, 
   getRelativePath, 
+  getProp,
   getQueryAll, 
   handleNullValues,
   poll, 

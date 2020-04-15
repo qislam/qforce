@@ -4,6 +4,7 @@ import * as moment from 'moment'
 import {deleteFolderRecursive, 
   getAbsolutePath, 
   getQueryAll, 
+  getProp,
   handleNullValues,
   pollBulkStatus, 
   prepJsonForCsv,
@@ -85,6 +86,7 @@ export default class Migrate extends Command {
       random: random,
       lodash: lodash,
       sha1: sha1,
+      getProp: getProp,
       plan: migrationPlan
     }
 
