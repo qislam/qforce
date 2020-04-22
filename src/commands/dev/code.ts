@@ -30,32 +30,31 @@ export default class DevCode extends Command {
     const featureBranch = args.featureBranch
     const developBranch = args.developBranch || settings.developBranch
  
-    const mergeBase = await execa('git', ['merge-base', featureBranch, developBranch])
+    const mergeBase = execa.sync('git', ['merge-base', featureBranch, developBranch])
     if (mergeBase.stderr) {
       cli.action.stop(mergeBase.stderr)
       return
     } 
     const baseCommit = mergeBase.stdout
     
-    const diff = await execa('git', ['diff', baseCommit, featureBranch])
+    const diff = execa.sync('git', ['diff', '--name-only', baseCommit, featureBranch])
     if (diff.stderr) {
       cli.action.stop(diff.stderr)
       return
     } 
-    const diffContent = diff.stdout + '\n'
-    const checkout = await execa('git', ['checkout', featureBranch])
+    const diffContent = diff.stdout.split('\n')
+    const checkout = execa.sync('git', ['checkout', featureBranch])
     if (checkout.stderr) {
       this.log(checkout.exitCode)
       cli.action.stop(checkout.stderr)
       //return
     } 
     for(let file of diffContent) {
-      let code = await execa('code', [file])
-      if (code.stderr) {
-        cli.action.stop(code.stderr)
-        //return
+      let openResult = execa.sync('code', [file]) 
+      if (openResult.stderr) {
+        cli.action.stop(openResult.stderr)
+        return
       } 
     }
-
   }
 }
