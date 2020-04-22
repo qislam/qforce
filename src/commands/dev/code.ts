@@ -5,7 +5,7 @@ const execa = require('execa')
 const fs = require('fs')
 
 export default class DevCode extends Command {
-  static description = 'describe the command here'
+  static description = 'Open all files committed in a branch in VS Code'
   static aliases = ['code','dev:code']
 
   static flags = {
@@ -29,32 +29,31 @@ export default class DevCode extends Command {
     }
     const featureBranch = args.featureBranch
     const developBranch = args.developBranch || settings.developBranch
- 
-    const mergeBase = execa.sync('git', ['merge-base', featureBranch, developBranch])
-    if (mergeBase.stderr) {
-      cli.action.stop(mergeBase.stderr)
-      return
-    } 
-    const baseCommit = mergeBase.stdout
     
-    const diff = execa.sync('git', ['diff', '--name-only', baseCommit, featureBranch])
-    if (diff.stderr) {
-      cli.action.stop(diff.stderr)
-      return
-    } 
-    const diffContent = diff.stdout.split('\n')
-    const checkout = execa.sync('git', ['checkout', featureBranch])
-    if (checkout.stderr) {
-      this.log(checkout.exitCode)
-      cli.action.stop(checkout.stderr)
-      //return
-    } 
-    for(let file of diffContent) {
-      let openResult = execa.sync('code', [file]) 
-      if (openResult.stderr) {
-        cli.action.stop(openResult.stderr)
-        return
-      } 
-    }
+    execa('git', ['checkout', featureBranch]
+    ).catch(
+      (error: any) => this.log(error)
+    ).then(
+      (result:any) => {
+        return execa('git', ['merge-base', featureBranch, developBranch])
+      }
+    ).catch(
+      (error:any) => this.log(error)
+    ).then(
+      (result:any) => {
+        return execa('git', ['diff', '--name-only', result.stdout, featureBranch])
+      }
+    ).then(
+      (result:any) => {
+        for (let file of result.stdout.split('\n')) {
+          execa.sync('code', [file])
+        }
+        cli.action.stop()
+      }
+    ).catch(
+      (error: any) => {
+        cli.action.stop(error)
+      }
+    )
   }
 }
