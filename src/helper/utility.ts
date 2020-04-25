@@ -108,7 +108,7 @@ function getQueryAll(query: string, targetusername: string, filter: boolean) {
   return new Promise(
     (resolve, reject) => {
       let sobjecttype = query.substring(query.toLowerCase().lastIndexOf('from'),).split(/\s+/)[1].trim()
-      console.log('sobjecttype: ' + sobjecttype)
+      //console.log('sobjecttype: ' + sobjecttype)
       let defPath = getAbsolutePath('.qforce/definitions/' + sobjecttype + '.json')
       if (fs.existsSync(defPath)) {
         buildQuery(JSON.parse(fs.readFileSync(defPath)))
