@@ -1,7 +1,9 @@
 qforce
 =
 
-Commands to help with salesforce development process. This is still very experimental so expect things to change a lot. More detailed documentation is available [here](https://qislam.github.io/qforce)
+Commands to help with salesforce development process. This is still very experimental so expect things to change a lot. More detailed documentation is available [here](https://qislam.github.io/qforce).
+
+Help us improve qforce by completing this short [survey](https://forms.gle/DLLUeoYq9cbXQC2i8). Not only you will be helping us, you may also end up winning a $25 amazon gift card. Winner (or winners) will be announced at the end of month, every month.
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/q.svg)](https://npmjs.org/package/q)
@@ -9,7 +11,8 @@ Commands to help with salesforce development process. This is still very experim
 [![License](https://img.shields.io/npm/l/q.svg)](https://github.com/qislam/q/blob/master/package.json)
 
 <!-- toc -->
-* [Usage](#usage)
+- [qforce](#qforce)
+- [Usage](#usage)
 <!-- tocstop -->
 # Usage
 <!-- usage -->
