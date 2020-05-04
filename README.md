@@ -11,8 +11,7 @@ Help us improve qforce by completing this short [survey](https://forms.gle/DLLUe
 [![License](https://img.shields.io/npm/l/q.svg)](https://github.com/qislam/q/blob/master/package.json)
 
 <!-- toc -->
-- [qforce](#qforce)
-- [Usage](#usage)
+* [Usage](#usage)
 <!-- tocstop -->
 # Usage
 <!-- usage -->
@@ -21,7 +20,7 @@ $ npm install -g qforce
 $ qforce COMMAND
 running command...
 $ qforce (-v|--version|version)
-qforce/0.6.1 darwin-x64 node-v10.13.0
+qforce/0.6.2 darwin-x64 node-v10.13.0
 $ qforce --help [COMMAND]
 USAGE
   $ qforce COMMAND
