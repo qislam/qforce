@@ -131,8 +131,18 @@ export default class Migrate extends Command {
         continue;
       }
       if (step.apexCodeFile && (flags.destination || migrationPlan.destination)) {
+        let apexCodePath: string = getAbsolutePath(step.apexCodeFile)
+        if (!fs.existsSync(apexCodePath)) {
+          this.log(apexCodePath + ' does not exist')
+          apexCodePath = getAbsolutePath(basePath.join('/') + '/' + step.apexCodeFile)
+        }
+        if (!fs.existsSync(apexCodePath)) {
+          this.log(apexCodePath + ' does not exist')
+          this.log('Path must be relative to project base or migration plan file.')
+          continue
+        }
         let options: dxOptions = {}
-        options.apexcodefile = getAbsolutePath(step.apexCodeFile)
+        options.apexcodefile = apexCodePath
         options.targetusername = flags.destination || migrationPlan.destination
         let exeResults = await sfdx.apex.execute(options)
         if (exeResults && exeResults.logs) this.log(exeResults.logs)
