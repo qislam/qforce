@@ -288,7 +288,7 @@ export default class Migrate extends Command {
 
       if(pollResults && pollResults.numberRecordsFailed > 0) {
         cli.action.stop()
-        this.log('Some records did not get uploaded:\n' + JSON.stringify(pollResults, null, 2))
+        this.log('Some records did not get uploaded:\n' + JSON.stringify(pollResults, null, 4))
         if(migrationPlan.ignoreError) continue
         const manualCheck = await cli.confirm('Continue?')
         if (manualCheck) continue

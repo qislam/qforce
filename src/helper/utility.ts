@@ -182,6 +182,7 @@ function pollBulkStatus(options: dxOptions, retries = 3, interval = 5000) {
     }
     // If the condition isn't met but the timeout hasn't elapsed, go again
     else if (Number(new Date()) < endTime) {
+        console.log(JSON.stringify(statusResults[0], null, 4))
         setTimeout(checkResults, interval, resolve, reject);
     }
     // Didn't match and too much time, reject!
