@@ -81,8 +81,14 @@ export default class Query extends Command {
     let options: dxOptions = {}
     options.query = queryString
     if (targetusername) options.targetusername = targetusername
+    options.json = true
     let queryResult = await sfdx.data.soqlQuery(options)
     //this.log(JSON.stringify(queryResult, null, 4))
+    fs.writeFileSync(
+      getAbsolutePath(resultPath.replace(/\.csv$/, '.json')), 
+      JSON.stringify(queryResult, null, 4),
+      {encoding: 'utf-8'})
+
     queryResult.records.map(prepJsonForCsv)
     fs.writeFileSync(
       getAbsolutePath(resultPath), 
