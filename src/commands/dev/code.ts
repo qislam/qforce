@@ -46,6 +46,7 @@ export default class DevCode extends Command {
     ).then(
       (result:any) => {
         for (let file of result.stdout.split('\n')) {
+          if(file.endsWith('-meta.xml')) continue
           execa.sync('code', [file])
         }
         cli.action.stop()
