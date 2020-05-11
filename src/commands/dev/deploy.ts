@@ -4,6 +4,7 @@ import {deleteFolderRecursive, getAbsolutePath} from '../../helper/utility'
 import {dxOptions, looseObject} from '../../helper/interfaces'
 const sfdx = require('sfdx-node')
 const execa = require('execa')
+const YAML = require('yaml')
 const path = require('path')
 const fs = require('fs')
 const _ = require('lodash')
@@ -15,6 +16,7 @@ export default class DevDeploy extends Command {
   static flags = {
     help: flags.help({char: 'h'}),
     username: flags.string({char: 'u'}),
+    file: flags.string({char: 'f', description: 'Relative path of YAML file in unix format.'}),
     diff: flags.boolean({char: 'd', description: 'Set to true if passing commit hash.'}),
     isCommit: flags.boolean({char: 'c', description: 'Set to true if deploying a single commit.'}),
     lastDeployCommit: flags.string({description: 'Commit hash of the last commit.'}),
@@ -39,9 +41,38 @@ export default class DevDeploy extends Command {
     if (fs.existsSync(getAbsolutePath('.qforce/deploy'))) {
       deleteFolderRecursive('.qforce/deploy')
     }
+    const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
+
+    if (flags.file) {
+      let retrieveYAML: looseObject
+      let filePath = flags.file || 'feature.yml'
+      if (!fs.existsSync(getAbsolutePath(filePath))) {
+        filePath = settings.retrieveBasePath + '/' + filePath
+      }
+      if (!fs.existsSync(getAbsolutePath(filePath))) {
+        cli.action.stop('File not found')
+      }
+      retrieveYAML = YAML.parse(fs.readFileSync(filePath, 'utf-8'))
+      for (let metadataType in retrieveYAML) {
+        if (retrieveYAML[metadataType]) {
+          for (let metadataName of retrieveYAML[metadataType]) {
+            let command = `sfdx force:source:deploy -m ${metadataType}:${metadataName} -u ${targetusername}`
+            let result = execa.commandSync(command)
+            this.log(JSON.stringify(result, null, 4))
+          }
+        } else {
+          let command = `sfdx force:source:deploy -m ${metadataType} -u ${targetusername}`
+          let result = execa.commandSync(command)
+          this.log(JSON.stringify(result, null, 4))
+        }
+      }
+      cli.action.stop()
+      return
+    }
+
     const featureBranch = args.featureBranch || flags.lastDeployCommit || settings.lastDeployCommit
     const developBranch = args.developBranch || flags.diff? 'HEAD' : settings.developBranch
-    const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
+    
 
     let diffFilesList: string[] = []
     if (flags.diff) {
@@ -50,6 +81,7 @@ export default class DevDeploy extends Command {
     } else if (flags.isCommit) {
       let commitFiles = 'git diff-tree --no-commit-id --name-only -r ' + featureBranch
       let diff = await execa.command(commitFiles)
+      diffFilesList = _.union(diffFilesList, diff.stdout.split('\n'))
       //this.log('diff original:\n' + diff.stdout)
       if (diff.stdout === "") {
         //this.log('Looks like a merge commit. Will calculate diff with parents.')
@@ -73,8 +105,9 @@ export default class DevDeploy extends Command {
       let diff = await execa('git', ['diff', '--name-only', baseCommit, featureBranch])
       diffFilesList = diff.stdout.split('\n')
     }
-
+    //this.log(diffFilesList[0])
     for (let sourceFilePath of diffFilesList) {
+      //this.log(sourceFilePath)
       if(!fs.existsSync(sourceFilePath)) continue
       let deployFilePath = '.qforce/deploy/' + sourceFilePath
       if (!fs.existsSync(path.dirname(deployFilePath))) {
