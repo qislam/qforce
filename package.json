@@ -1,7 +1,7 @@
 {
   "name": "qforce",
   "description": "Commands to help with salesforce development.",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "author": "Qamar Islam @qislam",
   "bin": {
     "qforce": "./bin/run"
