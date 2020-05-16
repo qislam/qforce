@@ -3,6 +3,7 @@ const execa = require('execa')
 
 export default class DevUpdate extends Command {
   static description = 'Update package'
+  static aliases = ['update', 'dev:update']
 
   static flags = {
     help: flags.help({char: 'h'}),

@@ -46,16 +46,19 @@ export default class DevRetrieve extends Command {
     for (let metadataType in retrieveYAML) {
       if (retrieveYAML[metadataType]) {
         for (let metadataName of retrieveYAML[metadataType]) {
-          let command = `sfdx force:source:retrieve -m ${metadataType}:${metadataName} -u ${targetusername}`
-          let result = execa.commandSync(command)
-          this.log(JSON.stringify(result, null, 4))
+          let command = `sfdx force:source:retrieve -m ${metadataType}:${metadataName} -u ${targetusername} --json`
+          let cmdOut = JSON.parse(execa.commandSync(command).stdout)
+          for (let file of cmdOut.result.inboundFiles) {
+            this.log('Retrieved ' + file.filePath)
+          }
         }
       } else {
-        let command = `sfdx force:source:retrieve -m ${metadataType} -u ${targetusername}`
-        let result = execa.commandSync(command)
-        this.log(JSON.stringify(result, null, 4))
+        let command = `sfdx force:source:retrieve -m ${metadataType} -u ${targetusername} --json`
+        let cmdOut = JSON.parse(execa.commandSync(command).stdout)
+        for (let file of cmdOut.result.inboundFiles) {
+          this.log('Retrieved ' + file.filePath)
+        }
       }
-      
     }
     cli.action.stop()
   }
