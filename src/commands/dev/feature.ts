@@ -7,20 +7,22 @@ const fs = require('fs')
 const execa = require('execa')
 const YAML = require('yaml')
 
-export default class DevRetrieve extends Command {
-  static description = 'To retrieve metadat based on items listed in a YAML file.'
-  static aliases = ['retrieve', 'dev:retrieve']
+export default class DevFeature extends Command {
+  static description = 'To retrieve and deploy source based on YAML file.'
 
   static flags = {
     help: flags.help({char: 'h'}),
+    start: flags.boolean({description: 'Start a new feature. Will create YAML file and folder if not already exist.'}),
+    retrieve: flags.boolean({description: 'Retrieve source based on YAML configuration.'}),
+    deploy: flags.boolean({description: 'Deploys source already retrieved.'}),
     username: flags.string({char: 'u'}),
-    file: flags.string({char: 'f', description: 'Relative path of YAML file in unix format.'}),
   }
 
-  static args = [{name: 'file'}]
+  static args = [{name: 'featureName'}]
 
   async run() {
-    const {args, flags} = this.parse(DevRetrieve)
+    const {args, flags} = this.parse(DevFeature)
+
     let settings, sfdxConfig
     if (fs.existsSync(getAbsolutePath('.qforce/settings.json'))) {
       settings = JSON.parse(
