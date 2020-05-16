@@ -9,19 +9,22 @@ const YAML = require('yaml')
 
 export default class DevFeature extends Command {
   static description = 'To retrieve and deploy source based on YAML file.'
+  static aliases = ['feature', 'dev:feature']
 
   static flags = {
     help: flags.help({char: 'h'}),
-    start: flags.boolean({description: 'Start a new feature. Will create YAML file and folder if not already exist.'}),
-    retrieve: flags.boolean({description: 'Retrieve source based on YAML configuration.'}),
-    deploy: flags.boolean({description: 'Deploys source already retrieved.'}),
+    start: flags.boolean({char: 's', description: 'Start a new feature. Will create YAML file and folder if not already exist.'}),
+    retrieve: flags.boolean({char: 'r', description: 'Retrieve source based on YAML configuration.'}),
+    deploy: flags.boolean({char: 'd', description: 'Deploys source already retrieved.'}),
     username: flags.string({char: 'u'}),
   }
 
-  static args = [{name: 'featureName'}]
+  static args = [{name: 'featureName', required: true}]
 
   async run() {
     const {args, flags} = this.parse(DevFeature)
+
+    cli.action.start('started processing feature ' + args.featureName)
 
     let settings, sfdxConfig
     if (fs.existsSync(getAbsolutePath('.qforce/settings.json'))) {
@@ -36,31 +39,58 @@ export default class DevFeature extends Command {
     }
     const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
 
-    let retrieveYAML: looseObject
-    let filePath = flags.file || 'feature.yml'
-    if (!fs.existsSync(getAbsolutePath(filePath))) {
-      filePath = settings.retrieveBasePath + '/' + filePath
+    let featureName = args.featureName.replace('/', '-')
+
+    if (flags.start) {
+      let yamlPath = `.qforce/features/${featureName}/${featureName}.yml`
+      if (!fs.existsSync(path.dirname(yamlPath))) {
+        fs.mkdirSync(path.dirname(yamlPath), {recursive: true})
+      }
+      let command = `code .qforce/features/${featureName}/${featureName}.yml`
+      execa.commandSync(command)
     }
-    if (!fs.existsSync(getAbsolutePath(filePath))) {
-      cli.action.stop('File not found. Check file path.')
-    }
-    retrieveYAML = YAML.parse(fs.readFileSync(filePath, 'utf-8'))
-    for (let metadataType in retrieveYAML) {
-      if (retrieveYAML[metadataType]) {
-        for (let metadataName of retrieveYAML[metadataType]) {
-          let command = `sfdx force:source:retrieve -m ${metadataType}:${metadataName} -u ${targetusername} --json`
+
+    if (flags.retrieve) {
+      cli.action.start('Retrieving feature ' + args.featureName)
+      let retrieveYAML: looseObject
+      let yamlPath = `.qforce/features/${featureName}/${featureName}.yml`
+      if (!fs.existsSync(getAbsolutePath(yamlPath))) {
+        cli.action.stop('File not found. Check file path. Remember to start a feature first.')
+      }
+      retrieveYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
+
+      for (let metadataType in retrieveYAML) {
+        if (retrieveYAML[metadataType]) {
+          for (let metadataName of retrieveYAML[metadataType]) {
+            let command = `sfdx force:source:retrieve -m ${metadataType}:${metadataName} -u ${targetusername} --json`
+            let cmdOut = JSON.parse(execa.commandSync(command).stdout)
+            for (let file of cmdOut.result.inboundFiles) {
+              let retrievePath = `.qforce/features/${featureName}/${file.filePath}` 
+              if (!fs.existsSync(path.dirname(retrievePath))) {
+                fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
+              }
+              fs.copyFileSync(file.filePath, retrievePath)
+              this.log('Retrieved ' + file.filePath)
+            }
+          }
+        } else {
+          let command = `sfdx force:source:retrieve -m ${metadataType} -u ${targetusername} --json`
           let cmdOut = JSON.parse(execa.commandSync(command).stdout)
           for (let file of cmdOut.result.inboundFiles) {
+            let retrievePath = `.qforce/features/${featureName}/${file.filePath}` 
+            if (!fs.existsSync(path.dirname(retrievePath))) {
+              fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
+            }
+            fs.copyFileSync(file.filePath, retrievePath)
             this.log('Retrieved ' + file.filePath)
           }
         }
-      } else {
-        let command = `sfdx force:source:retrieve -m ${metadataType} -u ${targetusername} --json`
-        let cmdOut = JSON.parse(execa.commandSync(command).stdout)
-        for (let file of cmdOut.result.inboundFiles) {
-          this.log('Retrieved ' + file.filePath)
-        }
       }
+    }
+    
+    if (flags.deploy) {
+      let command = `sfdx force:source:deploy -p .qforce/features/${featureName}/force-app -u ${targetusername} --json`
+      this.log(execa.commandSync(command).stdout)
     }
     cli.action.stop()
   }
