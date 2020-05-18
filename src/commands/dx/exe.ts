@@ -46,19 +46,22 @@ export default class Exe extends Command {
       targetusername = firstLine.substring(2,).trim()
     }
     let options: dxOptions = {}
+    options._rejectOnError = true
+    options._quiet = false
     options.apexcodefile = getAbsolutePath(filePath)
     if (targetusername) options.targetusername = targetusername
     sfdx.apex.execute(options).then(
       (result: any) => {
-        if (result === undefined) cli.action.stop('Error Executing')
-        else {
-          fs.writeFileSync(
-            getAbsolutePath(resultPath), 
-            result.logs,
-            {encoding: 'utf-8'})
-        }
+        fs.writeFileSync(
+          getAbsolutePath(resultPath), 
+          result.logs,
+          {encoding: 'utf-8'})
+        cli.action.stop()
+      }
+    ).catch(
+      (error: any) => {
+        cli.action.stop()
       }
     )
-    cli.action.stop()
   }
 }

@@ -79,21 +79,29 @@ export default class Query extends Command {
       }
     }
     let options: dxOptions = {}
+    options.json = true
     options.query = queryString
     if (targetusername) options.targetusername = targetusername
     options.json = true
-    let queryResult = await sfdx.data.soqlQuery(options)
-    //this.log(JSON.stringify(queryResult, null, 4))
-    fs.writeFileSync(
-      getAbsolutePath(resultPath.replace(/\.csv$/, '.json')), 
-      JSON.stringify(queryResult, null, 4),
-      {encoding: 'utf-8'})
-
-    queryResult.records.map(prepJsonForCsv)
-    fs.writeFileSync(
-      getAbsolutePath(resultPath), 
-      csvjson.toCSV(queryResult.records, {headers: 'relative', wrap: true}), 
-      {encoding: 'utf-8'})
-    cli.action.stop()
+    options._rejectOnError = true
+    sfdx.data.soqlQuery(options).then(
+      (queryResult:any) => {
+        fs.writeFileSync(
+          getAbsolutePath(resultPath.replace(/\.csv$/, '.json')), 
+          JSON.stringify(queryResult, null, 4),
+          {encoding: 'utf-8'})
+        queryResult.records.map(prepJsonForCsv)
+        fs.writeFileSync(
+          getAbsolutePath(resultPath), 
+          csvjson.toCSV(queryResult.records, {headers: 'relative', wrap: true}), 
+          {encoding: 'utf-8'})
+        cli.action.stop()
+      }
+    ).catch(
+      (error:any) => {
+        //let errorLog = JSON.parse(error)
+        cli.action.stop(error[0].message)
+      }
+    )
   }
 }
