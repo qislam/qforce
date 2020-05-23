@@ -20,6 +20,8 @@ export default class DevRelease extends Command {
     retrieve: flags.boolean({char: 'r', description: 'Retrieve source based on YAML configuration.'}),
     deploy: flags.boolean({char: 'd', description: 'Deploys source already retrieved.'}), 
     username: flags.string({char: 'u'}),
+    addFeature: flags.string({char: 'a', description: 'Adds one or more features to the release specified.'}),
+    removeFeature: flags.string({char: 'R', description: 'Removes one or more features from the release specified.'}),
   }
 
   static args = [{name: 'releaseName'}]
@@ -47,6 +49,13 @@ export default class DevRelease extends Command {
       if (!fs.existsSync(path.dirname(yamlPath))) {
         fs.mkdirSync(path.dirname(yamlPath), {recursive: true})
       }
+      if (!fs.existsSync(yamlPath)) {
+        fs.writeFileSync(
+          getAbsolutePath(yamlPath),
+          YAML.stringify({features: [], components: []}),
+          {encoding: 'utf-8'}
+        )
+      }
       let command = `code .qforce/releases/${releaseName}/${releaseName}.yml`
       execa.commandSync(command)
     }
@@ -55,14 +64,38 @@ export default class DevRelease extends Command {
     if (!fs.existsSync(getAbsolutePath(yamlPath))) {
       cli.action.stop('File not found. Check file path. Remember to start a feature first.')
     }
-    const retrieveYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
-    //cli.action.start(retrieveYAML.features)
+    const releaseYaml = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
+    //cli.action.start(releaseYaml.features)
     const retrievePathBase = `.qforce/releases/${releaseName}/metadata`
+
+    if (flags.addFeature) {
+      cli.action.start('Adding feature to the release')
+      let featureList = flags.addFeature.split(',')
+      releaseYaml.features = _.union(releaseYaml.features, featureList)
+      fs.writeFileSync(
+        getAbsolutePath(yamlPath),
+        YAML.stringify(releaseYaml),
+        {encoding: 'utf-8'}
+      )
+      cli.action.stop()
+    }
+
+    if (flags.removeFeature) {
+      cli.action.start('Adding feature to the release')
+      let featureList = flags.removeFeature.split(',')
+      releaseYaml.features = _.without(releaseYaml.features, ...featureList)
+      fs.writeFileSync(
+        getAbsolutePath(yamlPath),
+        YAML.stringify(releaseYaml),
+        {encoding: 'utf-8'}
+      )
+      cli.action.stop()
+    }
 
     if (flags.build) {
       cli.action.start('Building release components.')
-      retrieveYAML.components = {}
-      for (let feature of retrieveYAML.features) {
+      releaseYaml.components = {}
+      for (let feature of releaseYaml.features) {
         //cli.action.start('processing ' + feature)
         let featureName = feature.replace('/', '-')
         let featurePath = `.qforce/features/${featureName}/${featureName}.yml`
@@ -71,15 +104,15 @@ export default class DevRelease extends Command {
           let featureYaml = YAML.parse(fs.readFileSync(featurePath, 'utf-8'))
           for (let key in featureYaml) {
             if (!featureYaml[key]) featureYaml[key] = []
-            if (!retrieveYAML.components[key]) retrieveYAML.components[key] = []
-            retrieveYAML.components[key] = _.union(retrieveYAML.components[key], featureYaml[key])
+            if (!releaseYaml.components[key]) releaseYaml.components[key] = []
+            releaseYaml.components[key] = _.union(releaseYaml.components[key], featureYaml[key])
           }
-          //_.assign(retrieveYAML.components, featureYaml)
+          //_.assign(releaseYaml.components, featureYaml)
         }
       }
       fs.writeFileSync(
         getAbsolutePath(yamlPath),
-        YAML.stringify(retrieveYAML),
+        YAML.stringify(releaseYaml),
         {encoding: 'utf-8'}
       )
       cli.action.stop()
@@ -87,7 +120,7 @@ export default class DevRelease extends Command {
 
     if (flags.retrieve) {
       cli.action.start('Retrieving release ' + args.releaseName)
-      let components = retrieveYAML.components
+      let components = releaseYaml.components
       if (!components) cli.action.stop('No components defined. Execute qforce release --build releaseName')
       for (let metadataType in components) {
         if (components[metadataType]) {
