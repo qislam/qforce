@@ -64,8 +64,12 @@ export default class DevFeature extends Command {
       for (let metadataType in retrieveYAML) {
         if (retrieveYAML[metadataType]) {
           for (let metadataName of retrieveYAML[metadataType]) {
-            let command = `sfdx force:source:retrieve -m ${metadataType}:${metadataName} -u ${targetusername} --json`
+            let command = `sfdx force:source:retrieve -m "${metadataType}:${metadataName}" -u ${targetusername} --json`
             let cmdOut = JSON.parse(execa.commandSync(command).stdout)
+            if (!cmdOut.result) {
+              this.log(`Metadata not retrieved - "${metadataType}:${metadataName}"`)
+              continue
+            }
             for (let file of cmdOut.result.inboundFiles) {
               let retrievePath = `${retrievePathBase}/${file.filePath}` 
               if (!fs.existsSync(path.dirname(retrievePath))) {
