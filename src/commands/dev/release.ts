@@ -93,9 +93,8 @@ export default class DevRelease extends Command {
         if (components[metadataType]) {
           for (let metadataName of components[metadataType]) {
             sfdx.source.retrieve({
-              metadata: `"${metadataType}:${metadataName}"`,
+              metadata: `${metadataType}:${metadataName}`,
               targetusername: targetusername,
-              json: true,
               _quiet: false,
               _rejectOnError: true
             }).then(
@@ -110,33 +109,35 @@ export default class DevRelease extends Command {
                   this.log('Retrieved ' + file.filePath)
                 }
               }
-            )
-            let command = `sfdx force:source:retrieve -m "${metadataType}:${metadataName}" -u ${targetusername} --json`
-            let cmdOut = JSON.parse(execa.commandSync(command).stdout)
-            if (!cmdOut.result) {
-              this.log(`Metadata not retrieved - "${metadataType}:${metadataName}"`)
-              continue
-            }
-            for (let file of cmdOut.result.inboundFiles) {
-              let retrievePath = `${retrievePathBase}/${file.filePath}` 
-              if (!fs.existsSync(path.dirname(retrievePath))) {
-                fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
+            ).catch(
+              (error: any) => {
+                this.log(error)
               }
-              fs.copyFileSync(file.filePath, retrievePath)
-              this.log('Retrieved ' + file.filePath)
-            }
+            )
           }
         } else {
-          let command = `sfdx force:source:retrieve -m ${metadataType} -u ${targetusername} --json`
-          let cmdOut = JSON.parse(execa.commandSync(command).stdout)
-          for (let file of cmdOut.result.inboundFiles) {
-            let retrievePath = `${retrievePathBase}/${file.filePath}`  
-            if (!fs.existsSync(path.dirname(retrievePath))) {
-              fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
+          sfdx.source.retrieve({
+            metadata: metadataType,
+            targetusername: targetusername,
+            _quiet: false,
+            _rejectOnError: true
+          }).then(
+            (result: any) => {
+              this.log(result)
+              for (let file of result.inboundFiles) {
+                let retrievePath = `${retrievePathBase}/${file.filePath}` 
+                if (!fs.existsSync(path.dirname(retrievePath))) {
+                  fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
+                }
+                fs.copyFileSync(file.filePath, retrievePath)
+                this.log('Retrieved ' + file.filePath)
+              }
             }
-            fs.copyFileSync(file.filePath, retrievePath)
-            this.log('Retrieved ' + file.filePath)
-          }
+          ).catch(
+            (error: any) => {
+              this.log(error)
+            }
+          )
         }
       }
     }

@@ -60,36 +60,55 @@ export default class DevFeature extends Command {
         cli.action.stop('File not found. Check file path. Remember to start a feature first.')
       }
       retrieveYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
-
       for (let metadataType in retrieveYAML) {
         if (retrieveYAML[metadataType]) {
           for (let metadataName of retrieveYAML[metadataType]) {
-            let command = `sfdx force:source:retrieve -m "${metadataType}:${metadataName}" -u ${targetusername} --json`
-            let cmdOut = JSON.parse(execa.commandSync(command).stdout)
-            if (!cmdOut.result) {
-              this.log(`Metadata not retrieved - "${metadataType}:${metadataName}"`)
-              continue
-            }
-            for (let file of cmdOut.result.inboundFiles) {
-              let retrievePath = `${retrievePathBase}/${file.filePath}` 
-              if (!fs.existsSync(path.dirname(retrievePath))) {
-                fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
+            sfdx.source.retrieve({
+              metadata: `${metadataType}:${metadataName}`,
+              targetusername: targetusername,
+              _quiet: false,
+              _rejectOnError: true
+            }).then(
+              (result: any) => {
+                this.log(result)
+                for (let file of result.inboundFiles) {
+                  let retrievePath = `${retrievePathBase}/${file.filePath}` 
+                  if (!fs.existsSync(path.dirname(retrievePath))) {
+                    fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
+                  }
+                  fs.copyFileSync(file.filePath, retrievePath)
+                  this.log('Retrieved ' + file.filePath)
+                }
               }
-              fs.copyFileSync(file.filePath, retrievePath)
-              this.log('Retrieved ' + file.filePath)
-            }
+            ).catch(
+              (error: any) => {
+                this.log(error)
+              }
+            )
           }
         } else {
-          let command = `sfdx force:source:retrieve -m ${metadataType} -u ${targetusername} --json`
-          let cmdOut = JSON.parse(execa.commandSync(command).stdout)
-          for (let file of cmdOut.result.inboundFiles) {
-            let retrievePath = `${retrievePathBase}/${file.filePath}` 
-            if (!fs.existsSync(path.dirname(retrievePath))) {
-              fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
+          sfdx.source.retrieve({
+            metadata: metadataType,
+            targetusername: targetusername,
+            _quiet: false,
+            _rejectOnError: true
+          }).then(
+            (result: any) => {
+              this.log(result)
+              for (let file of result.inboundFiles) {
+                let retrievePath = `${retrievePathBase}/${file.filePath}` 
+                if (!fs.existsSync(path.dirname(retrievePath))) {
+                  fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
+                }
+                fs.copyFileSync(file.filePath, retrievePath)
+                this.log('Retrieved ' + file.filePath)
+              }
             }
-            fs.copyFileSync(file.filePath, retrievePath)
-            this.log('Retrieved ' + file.filePath)
-          }
+          ).catch(
+            (error: any) => {
+              this.log(error)
+            }
+          )
         }
       }
     }
