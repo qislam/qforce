@@ -7,26 +7,26 @@ const fs = require('fs')
 const execa = require('execa')
 const YAML = require('yaml')
 const sfdx = require('sfdx-node')
+const _ = require('lodash')
 
-export default class DevFeature extends Command {
-  static description = 'To retrieve and deploy source based on YAML file.'
-  static aliases = ['feature', 'dev:feature']
+export default class DevRelease extends Command {
+  static description = 'describe the command here'
+  static aliases = ['release', 'dev:release']
 
   static flags = {
     help: flags.help({char: 'h'}),
-    start: flags.boolean({char: 's', description: 'Start a new feature. Will create YAML file and folder if not already exist.'}),
+    start: flags.boolean({char: 's', description: 'Start a new release. Will create YAML file and folder if not already exist.'}),
+    build: flags.boolean({char: 'b', description: 'To recalculate components based on features listed.'}),
     retrieve: flags.boolean({char: 'r', description: 'Retrieve source based on YAML configuration.'}),
-    deploy: flags.boolean({char: 'd', description: 'Deploys source already retrieved.'}),
+    deploy: flags.boolean({char: 'd', description: 'Deploys source already retrieved.'}), 
     username: flags.string({char: 'u'}),
   }
 
-  static args = [{name: 'featureName', required: true}]
+  static args = [{name: 'releaseName'}]
 
   async run() {
-    const {args, flags} = this.parse(DevFeature)
-
-    cli.action.start('started processing feature ' + args.featureName)
-
+    const {args, flags} = this.parse(DevRelease)
+    cli.action.start('Working on release')
     let settings, sfdxConfig
     if (fs.existsSync(getAbsolutePath('.qforce/settings.json'))) {
       settings = JSON.parse(
@@ -40,30 +40,53 @@ export default class DevFeature extends Command {
     }
     const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
 
-    let featureName = args.featureName.replace('/', '-')
+    let releaseName = args.releaseName.replace('/', '-')
 
     if (flags.start) {
-      let yamlPath = `.qforce/features/${featureName}/${featureName}.yml`
+      let yamlPath = `.qforce/releases/${releaseName}/${releaseName}.yml`
       if (!fs.existsSync(path.dirname(yamlPath))) {
         fs.mkdirSync(path.dirname(yamlPath), {recursive: true})
       }
-      let command = `code .qforce/features/${featureName}/${featureName}.yml`
+      let command = `code .qforce/releases/${releaseName}/${releaseName}.yml`
       execa.commandSync(command)
     }
 
-    const retrievePathBase = `.qforce/features/${featureName}/metadata`
-    if (flags.retrieve) {
-      cli.action.start('Retrieving feature ' + args.featureName)
-      let retrieveYAML: looseObject
-      let yamlPath = `.qforce/features/${featureName}/${featureName}.yml`
-      if (!fs.existsSync(getAbsolutePath(yamlPath))) {
-        cli.action.stop('File not found. Check file path. Remember to start a feature first.')
-      }
-      retrieveYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
+    let yamlPath = `.qforce/releases/${releaseName}/${releaseName}.yml`
+    if (!fs.existsSync(getAbsolutePath(yamlPath))) {
+      cli.action.stop('File not found. Check file path. Remember to start a feature first.')
+    }
+    const retrieveYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
+    //cli.action.start(retrieveYAML.features)
+    const retrievePathBase = `.qforce/releases/${releaseName}/metadata`
 
-      for (let metadataType in retrieveYAML) {
-        if (retrieveYAML[metadataType]) {
-          for (let metadataName of retrieveYAML[metadataType]) {
+    if (flags.build) {
+      cli.action.start('Building release components.')
+      if (!retrieveYAML.components) retrieveYAML.components = {}
+      for (let feature of retrieveYAML.features) {
+        //cli.action.start('processing ' + feature)
+        let featureName = feature.replace('/', '-')
+        let featurePath = `.qforce/features/${featureName}/${featureName}.yml`
+        if(fs.existsSync(getAbsolutePath(featurePath))) {
+          //cli.action.start('processing path ' + featurePath)
+          let featureYaml = YAML.parse(fs.readFileSync(featurePath, 'utf-8'))
+          _.assign(retrieveYAML.components, featureYaml)
+        }
+      }
+      fs.writeFileSync(
+        getAbsolutePath(yamlPath),
+        YAML.stringify(retrieveYAML),
+        {encoding: 'utf-8'}
+      )
+      cli.action.stop()
+    }
+
+    if (flags.retrieve) {
+      cli.action.start('Retrieving release ' + args.releaseName)
+      let components = retrieveYAML.components
+      if (!components) cli.action.stop('No components defined. Execute qforce release --build releaseName')
+      for (let metadataType in components) {
+        if (components[metadataType]) {
+          for (let metadataName of components[metadataType]) {
             let command = `sfdx force:source:retrieve -m ${metadataType}:${metadataName} -u ${targetusername} --json`
             let cmdOut = JSON.parse(execa.commandSync(command).stdout)
             for (let file of cmdOut.result.inboundFiles) {
@@ -79,7 +102,7 @@ export default class DevFeature extends Command {
           let command = `sfdx force:source:retrieve -m ${metadataType} -u ${targetusername} --json`
           let cmdOut = JSON.parse(execa.commandSync(command).stdout)
           for (let file of cmdOut.result.inboundFiles) {
-            let retrievePath = `${retrievePathBase}/${file.filePath}` 
+            let retrievePath = `${retrievePathBase}/${file.filePath}`  
             if (!fs.existsSync(path.dirname(retrievePath))) {
               fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
             }
