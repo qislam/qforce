@@ -10,7 +10,7 @@ const sfdx = require('sfdx-node')
 const _ = require('lodash')
 
 export default class DevRelease extends Command {
-  static description = 'describe the command here'
+  static description = 'To manage yml based release build, retrieve and deploy.'
   static aliases = ['release', 'dev:release']
 
   static flags = {
@@ -41,11 +41,14 @@ export default class DevRelease extends Command {
       )
     }
     const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
+    const releaseYamlPath = settings.releaseYamlPath || '.qforce/releases'
+    const releaseMetaPath = settings.releaseMetaPath || '.qforce/releases'
+    const featureYamlPath = settings.featureYamlPath || '.qforce/features'
 
     let releaseName = args.releaseName.replace('/', '-')
 
     if (flags.start) {
-      let yamlPath = `.qforce/releases/${releaseName}/${releaseName}.yml`
+      let yamlPath = `${releaseYamlPath}/${releaseName}/${releaseName}.yml`
       if (!fs.existsSync(path.dirname(yamlPath))) {
         fs.mkdirSync(path.dirname(yamlPath), {recursive: true})
       }
@@ -56,17 +59,17 @@ export default class DevRelease extends Command {
           {encoding: 'utf-8'}
         )
       }
-      let command = `code .qforce/releases/${releaseName}/${releaseName}.yml`
+      let command = `code ${releaseYamlPath}/${releaseName}/${releaseName}.yml`
       execa.commandSync(command)
     }
 
-    let yamlPath = `.qforce/releases/${releaseName}/${releaseName}.yml`
+    let yamlPath = `${releaseYamlPath}/${releaseName}/${releaseName}.yml`
     if (!fs.existsSync(getAbsolutePath(yamlPath))) {
       cli.action.stop('File not found. Check file path. Remember to start a feature first.')
     }
     const releaseYaml = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
     //cli.action.start(releaseYaml.features)
-    const retrievePathBase = `.qforce/releases/${releaseName}/metadata`
+    const retrievePathBase = `${releaseMetaPath}/${releaseName}/metadata`
 
     if (flags.addFeature) {
       cli.action.start('Adding feature to the release')
@@ -92,13 +95,13 @@ export default class DevRelease extends Command {
       cli.action.stop()
     }
 
-    if (flags.build) {
+    if (flags.build || flags.addFeature || flags.removeFeature) {
       cli.action.start('Building release components.')
       releaseYaml.components = {}
       for (let feature of releaseYaml.features) {
         //cli.action.start('processing ' + feature)
         let featureName = feature.replace('/', '-')
-        let featurePath = `.qforce/features/${featureName}/${featureName}.yml`
+        let featurePath = `${featureYamlPath}/${featureName}/${featureName}.yml`
         if(fs.existsSync(getAbsolutePath(featurePath))) {
           //cli.action.start('processing path ' + featurePath)
           let featureYaml = YAML.parse(fs.readFileSync(featurePath, 'utf-8'))
@@ -128,23 +131,27 @@ export default class DevRelease extends Command {
             sfdx.source.retrieve({
               metadata: `${metadataType}:${metadataName}`,
               targetusername: targetusername,
+              json: true,
               _quiet: false,
               _rejectOnError: true
             }).then(
               (result: any) => {
-                this.log(result)
+                if (!result.inboundFiles.length) {
+                  this.log(`\n\nCould not retrieve ${metadataType}:${metadataName}\n\n`)
+                }
                 for (let file of result.inboundFiles) {
                   let retrievePath = `${retrievePathBase}/${file.filePath}` 
                   if (!fs.existsSync(path.dirname(retrievePath))) {
                     fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
                   }
                   fs.copyFileSync(file.filePath, retrievePath)
-                  this.log('Retrieved ' + file.filePath)
+                  //this.log('Retrieved ' + file.filePath)
                 }
               }
             ).catch(
               (error: any) => {
-                this.log(error)
+                this.log(`Could Not retrieve ${metadataType}:${metadataName}`)
+                //this.log(error)
               }
             )
           }
@@ -152,11 +159,14 @@ export default class DevRelease extends Command {
           sfdx.source.retrieve({
             metadata: metadataType,
             targetusername: targetusername,
+            json: true,
             _quiet: false,
             _rejectOnError: true
           }).then(
             (result: any) => {
-              this.log(result)
+              if (!result.inboundFiles.length) {
+                this.log(`\n\nCould not retrieve ${metadataType}\n\n`)
+              }
               for (let file of result.inboundFiles) {
                 let retrievePath = `${retrievePathBase}/${file.filePath}` 
                 if (!fs.existsSync(path.dirname(retrievePath))) {
@@ -179,14 +189,15 @@ export default class DevRelease extends Command {
       sfdx.source.deploy({targetusername: targetusername, 
         sourcepath: retrievePathBase, 
         json: true, 
-        _rejectOnError: true})
+        _rejectOnError: true,
+        _quiet: true})
       .then(
         (result: any) => {
           cli.action.stop(JSON.stringify(result, null, 4))
         }
       ).catch(
         (error: any) => {
-          cli.action.stop(error[0].message)
+          cli.action.stop(JSON.stringify(error, null, 4))
         }
       )
     }

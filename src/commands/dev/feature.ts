@@ -39,23 +39,25 @@ export default class DevFeature extends Command {
       )
     }
     const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
+    const featureYamlPath = settings.featureYamlPath || '.qforce/features'
+    const featureMetaPath = settings.featureMetaPath || '.qforce/features'
 
     let featureName = args.featureName.replace('/', '-')
 
     if (flags.start) {
-      let yamlPath = `.qforce/features/${featureName}/${featureName}.yml`
+      let yamlPath = `${featureYamlPath}/${featureName}/${featureName}.yml`
       if (!fs.existsSync(path.dirname(yamlPath))) {
         fs.mkdirSync(path.dirname(yamlPath), {recursive: true})
       }
-      let command = `code .qforce/features/${featureName}/${featureName}.yml`
+      let command = `code ${featureYamlPath}/${featureName}/${featureName}.yml`
       execa.commandSync(command)
     }
 
-    const retrievePathBase = `.qforce/features/${featureName}/metadata`
+    const retrievePathBase = `${featureMetaPath}/${featureName}/metadata`
     if (flags.retrieve) {
       cli.action.start('Retrieving feature ' + args.featureName)
       let retrieveYAML: looseObject
-      let yamlPath = `.qforce/features/${featureName}/${featureName}.yml`
+      let yamlPath = `${featureYamlPath}/${featureName}/${featureName}.yml`
       if (!fs.existsSync(getAbsolutePath(yamlPath))) {
         cli.action.stop('File not found. Check file path. Remember to start a feature first.')
       }
