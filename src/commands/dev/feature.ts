@@ -49,6 +49,11 @@ export default class DevFeature extends Command {
       if (!fs.existsSync(path.dirname(yamlPath))) {
         fs.mkdirSync(path.dirname(yamlPath), {recursive: true})
       }
+      fs.writeFileSync(
+        getAbsolutePath(yamlPath),
+        YAML.stringify({CustomField: ['Account.Name']}),
+        {encoding: 'utf-8'}
+      )
       let command = `code ${featureYamlPath}/${featureName}/${featureName}.yml`
       execa.commandSync(command)
     }

@@ -135,6 +135,7 @@ export default class Migrate extends Command {
         if (!fs.existsSync(apexCodePath)) {
           this.log(apexCodePath + ' does not exist')
           apexCodePath = getAbsolutePath(basePath.join('/') + '/' + step.apexCodeFile)
+          this.log('Checking at ' + apexCodePath)
         }
         if (!fs.existsSync(apexCodePath)) {
           this.log(apexCodePath + ' does not exist')

@@ -110,7 +110,8 @@ export default class DevRelease extends Command {
             if (!releaseYaml.components[key]) releaseYaml.components[key] = []
             releaseYaml.components[key] = _.union(releaseYaml.components[key], featureYaml[key])
           }
-          //_.assign(releaseYaml.components, featureYaml)
+        } else {
+          cli.action.stop(`${feature} not found at path ${featurePath}`)
         }
       }
       fs.writeFileSync(
