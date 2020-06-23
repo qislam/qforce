@@ -15,7 +15,7 @@ export default class DevUpdate extends Command {
   async run() {
     const {args, flags} = this.parse(DevUpdate)
     cli.action.start('Updating qforce. Please wait... ')
-    execa.command('npm install -g qforce').stdout.pipe(process.stdout)
+    await execa.command('npm install -g qforce').stdout.pipe(process.stdout)
     cli.action.stop()
   }
 }
