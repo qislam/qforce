@@ -1,4 +1,5 @@
 import {Command, flags} from '@oclif/command'
+import cli from 'cli-ux'
 const execa = require('execa')
 
 export default class DevUpdate extends Command {
@@ -13,7 +14,8 @@ export default class DevUpdate extends Command {
 
   async run() {
     const {args, flags} = this.parse(DevUpdate)
-
+    cli.action.start('Updating qforce. Please wait... ')
     execa.command('npm install -g qforce').stdout.pipe(process.stdout)
+    cli.action.stop()
   }
 }
