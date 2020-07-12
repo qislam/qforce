@@ -1,7 +1,7 @@
 import { looseObject } from './interfaces'
 
 const basic: string = `
-let Plan = {
+let plan = {
     startIndex: 0, // If set, process will start at the step index provided.
     stopIndex: 1, // If set, process will stop at the step index provided.
     source: 'prod', // Source param can be skipped on command line if set here. If both provided, value from command line will be used.
@@ -34,7 +34,7 @@ let Plan = {
     ]
 }
 
-module.exports = Plan;
+module.exports = plan;
 `
 
 const allSamples: looseObject = {
