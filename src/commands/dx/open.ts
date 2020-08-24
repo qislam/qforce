@@ -20,13 +20,19 @@ export default class Open extends Command {
 
   async run() {
     const {flags} = this.parse(Open)
-    let settings
+    let settings: any = {}, sfdxConfig: any = {}
     if (fs.existsSync(path.join(process.cwd(), '.qforce', 'settings.json'))) {
       settings = JSON.parse(
         fs.readFileSync(path.join(process.cwd(), '.qforce', 'settings.json'))
       )
     }
-    const targetusername = flags.username || settings.targetusername
+
+    if (fs.existsSync(path.join(process.cwd(), '.sfdx', 'sfdx-config.json'))) {
+      sfdxConfig = JSON.parse(
+        fs.readFileSync(path.join(process.cwd(), '.sfdx', 'sfdx-config.json'))
+      )
+    }
+    let targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
     let openPath = ''
     if (flags.path) {
       if (flags.path == 'setup') openPath = 'lightning/setup/SetupOneHome/home'
