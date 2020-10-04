@@ -68,6 +68,7 @@ export default class DevFeature extends Command {
       }
       retrieveYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
       for (let metadataType in retrieveYAML) {
+        if (metadataType == 'ManualStep') continue;
         this.log(`Retrieving metadatType: ${metadataType}`);
         if (retrieveYAML[metadataType]) {
           for (let metadataName of retrieveYAML[metadataType]) {

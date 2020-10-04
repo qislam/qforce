@@ -127,6 +127,7 @@ export default class DevRelease extends Command {
       let components = releaseYaml.components
       if (!components) cli.action.stop('No components defined. Execute qforce release --build releaseName')
       for (let metadataType in components) {
+        if (metadataType == 'ManualStep') continue;
         this.log(`Retrieving metadatType: ${metadataType}`);
         if (components[metadataType]) {
           for (let metadataName of components[metadataType]) {
