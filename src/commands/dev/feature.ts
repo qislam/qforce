@@ -68,9 +68,11 @@ export default class DevFeature extends Command {
       }
       retrieveYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
       for (let metadataType in retrieveYAML) {
+        this.log(`Retrieving metadatType: ${metadataType}`);
         if (retrieveYAML[metadataType]) {
           for (let metadataName of retrieveYAML[metadataType]) {
-            sfdx.source.retrieve({
+            this.log(`Retrieving: ${metadataType}:${metadataName}`);
+            await sfdx.source.retrieve({
               metadata: `${metadataType}:${metadataName}`,
               targetusername: targetusername,
               _quiet: false,
@@ -94,7 +96,7 @@ export default class DevFeature extends Command {
             )
           }
         } else {
-          sfdx.source.retrieve({
+          await sfdx.source.retrieve({
             metadata: metadataType,
             targetusername: targetusername,
             _quiet: false,

@@ -127,9 +127,11 @@ export default class DevRelease extends Command {
       let components = releaseYaml.components
       if (!components) cli.action.stop('No components defined. Execute qforce release --build releaseName')
       for (let metadataType in components) {
+        this.log(`Retrieving metadatType: ${metadataType}`);
         if (components[metadataType]) {
           for (let metadataName of components[metadataType]) {
-            sfdx.source.retrieve({
+            this.log(`Retrieving: ${metadataType}:${metadataName}`);
+            await sfdx.source.retrieve({
               metadata: `${metadataType}:${metadataName}`,
               targetusername: targetusername,
               json: true,
@@ -157,7 +159,7 @@ export default class DevRelease extends Command {
             )
           }
         } else {
-          sfdx.source.retrieve({
+          await sfdx.source.retrieve({
             metadata: metadataType,
             targetusername: targetusername,
             json: true,
