@@ -55,7 +55,7 @@ export default class DevRelease extends Command {
       if (!fs.existsSync(yamlPath)) {
         fs.writeFileSync(
           getAbsolutePath(yamlPath),
-          YAML.stringify({features: [], components: []}),
+          YAML.stringify({features: [], manualSteps: [], components: []}),
           {encoding: 'utf-8'}
         )
       }
@@ -106,9 +106,15 @@ export default class DevRelease extends Command {
           //cli.action.start('processing path ' + featurePath)
           let featureYaml = YAML.parse(fs.readFileSync(featurePath, 'utf-8'))
           for (let key in featureYaml) {
-            if (!featureYaml[key]) featureYaml[key] = []
-            if (!releaseYaml.components[key]) releaseYaml.components[key] = []
-            releaseYaml.components[key] = _.union(releaseYaml.components[key], featureYaml[key])
+            if (key == 'ManualSteps') {
+              if (!releaseYaml.manualSteps) releaseYaml.manualSteps = []
+              releaseYaml.manualSteps = _.union(releaseYaml.manualSteps, featureYaml[key])
+              releaseYaml.manualSteps = _.uniqWith(releaseYaml.manualSteps, _.isEqual)
+            } else {
+              if (!featureYaml[key]) featureYaml[key] = []
+              if (!releaseYaml.components[key]) releaseYaml.components[key] = []
+              releaseYaml.components[key] = _.union(releaseYaml.components[key], featureYaml[key])
+            }
           }
         } else {
           cli.action.stop(`${feature} not found at path ${featurePath}`)
