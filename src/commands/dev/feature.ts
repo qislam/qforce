@@ -2,7 +2,7 @@ import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
 import {getFiles, getAbsolutePath} from '../../helper/utility'
 import {dxOptions, looseObject} from '../../helper/interfaces'
-import {metadataMap, metadataRegex} from '../../helper/metadataUtil'
+const metaUtil = require('../../helper/metadataUtil')
 const path = require('path')
 const fs = require('fs')
 const execa = require('execa')
@@ -47,6 +47,8 @@ export default class DevFeature extends Command {
         fs.readFileSync(path.join(process.cwd(), '.sfdx', 'sfdx-config.json'))
       )
     }
+    const metadataMap = metaUtil.metadataMap
+    const metadataRegex = metaUtil.metadataRegex
     const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
     const featureYamlPath = settings.featureYamlPath || '.qforce/features'
     const featureMetaPath = settings.featureMetaPath || '.qforce/features'
