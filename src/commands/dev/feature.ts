@@ -2,6 +2,7 @@ import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
 import {getFiles, getAbsolutePath} from '../../helper/utility'
 import {dxOptions, looseObject} from '../../helper/interfaces'
+import {metadataMap, metadataRegex} from '../../helper/metadataUtil'
 const path = require('path')
 const fs = require('fs')
 const execa = require('execa')
@@ -55,77 +56,6 @@ export default class DevFeature extends Command {
     let featureName = args.featureName.replace('/', '-')
     let featureYAML: looseObject
     let yamlPath = `${featureYamlPath}/${featureName}/${featureName}.yml`
-
-    const metadataArray = [
-      ['classes', 'ApexClass'],
-      ['applications', 'CustomApplication'],
-      ['aura', 'AuraDefinitionBundle'],
-      ['lwc', 'LightningComponentBundle'],
-      ['authproviders', 'AuthProvider'],
-      ['contentassets', 'ContentAsset'],
-      ['customMetadata', 'CustomMetadata'],
-      ['customPermissions', 'CustomPermission'],
-      ['documents', 'DocumentFolder'],
-      ['email', 'EmailFolder'],
-      ['flexipages', 'FlexiPage'],
-      ['flows', 'Flow'],
-      ['globalValueSetTranslations', 'GlobalValueSetTranslation'],
-      ['globalValueSets', 'GlobalValueSet'],
-      ['groups', 'Group'],
-      ['labels', 'CustomLabels'],
-      ['layouts', 'Layout'],
-      ['letterhead', 'Letterhead'],
-      ['namedCredentials', 'NamedCredential'],
-      ['objects', 'CustomObject'],
-      ['pages', 'ApexPage'],
-      ['pathAssistants', 'PathAssistant'],
-      ['permissionsets', 'PermissionSet'],
-      ['queues', 'Queue'],
-      ['queueRoutingConfigs', 'QueueRoutingConfig'],
-      ['quickActions', 'QuickAction'],
-      ['remoteSiteSettings', 'RemoteSiteSetting'],
-      ['reportTypes', 'ReportType'],
-      ['roles', 'Role'],
-      ['staticresources', 'StaticResource'],
-      ['tabs', 'CustomTab'],
-      ['triggers', 'ApexTrigger'],
-      ['workflows', 'Workflow']
-    ]
-
-    const metadataRegexArray = [
-      ['classes', /\.(cls|cls-meta.xml)$/i],
-      ['applications', /\.app-meta\.xml$/i],
-      ['authproviders', /\.authprovider-meta\.xml$/i],
-      ['contentassets', /\.(asset|asset-meta\.xml)$/i],
-      ['customMetadata', /\.md-meta\.xml$/i],
-      ['customPermissions', /\.customPermission-meta\.xml$/i],
-      ['documents', /\.documentFolder-meta\.xml$/i],
-      ['email', /\.emailFolder-meta\.xml$/i],
-      ['flexipages', /\.flexipage-meta\.xml$/i],
-      ['flows', /\.flow-meta\.xml$/i],
-      ['globalValueSetTranslations', /\.globalValueSetTranslation-meta\.xml$/i],
-      ['globalValueSets', /\.globalValueSet-meta\.xml$/i],
-      ['groups', /\.group-meta\.xml$/i],
-      ['layouts', /\.layout-meta\.xml$/i],
-      ['letterhead', /\.letter-meta\.xml$/i],
-      ['namedCredentials', /\.namedCredential-meta\.xml$/i],
-      ['pages', /\.(page|page-meta\.xml)$/i],
-      ['pathAssistants', /\.pathAssistant-meta\.xml$/i],
-      ['permissionsets', /\.permissionset-meta\.xml$/i],
-      ['queues', /\.queue-meta\.xml$/i],
-      ['queueRoutingConfigs', /\.queueRoutingConfig-meta\.xml$/i],
-      ['quickActions', /\.quickAction-meta\.xml$/i],
-      ['remoteSiteSettings', /\.remoteSite-meta\.xml$/i],
-      ['reportTypes', /\.reportType-meta\.xml$/i],
-      ['roles', /\.role-meta\.xml$/i],
-      ['staticresources', /\..*$/i],
-      ['tabs', /\.tab-meta\.xml$/i],
-      ['triggers', /\.(trigger|trigger-meta.xml)$/i],
-      ['workflows', /\.workflow-meta\.xml$/i]
-    ]
-
-    const metadataMap = new Map(metadataArray)
-    const metadataRegex = new Map(metadataRegexArray)
 
     if (flags.start) {
       if (!fs.existsSync(path.dirname(yamlPath))) {
