@@ -75,6 +75,15 @@ function getAbsolutePath(rawPath: string) {
   return relativePath
 }
 
+async function getFiles(dir: string) {
+  const dirents = fs.readdirSync(dir, { withFileTypes: true });
+  const files = await Promise.all(dirents.map((dirent: looseObject) => {
+    const res = path.resolve(dir, dirent.name);
+    return dirent.isDirectory() ? getFiles(res) : res;
+  }));
+  return Array.prototype.concat(...files);
+}
+
 function getQueryFields(objectDefinition:looseObject, filter: boolean) {
   let fieldNames = ''
   let tooManyFields = objectDefinition.fields.length > 100
@@ -225,6 +234,7 @@ export {
   filterQueryFields, 
   getAbsolutePath, 
   getRelativePath, 
+  getFiles,
   getProp,
   getQueryAll, 
   handleNullValues,

@@ -23,6 +23,9 @@ export default class DevConfig extends Command {
     lastDeployCommit: flags.string({description: 'Commit hash of the last commit that was deployed.'}),
     developBranch: flags.string({description: 'Name of default develop branch.'}),
     patchPath: flags.string({description: 'Path to save the patch file when running patch command'}),
+    featureYamlPath: flags.string({description: 'Path to save the feature YAML file'}),
+    featureMetaPath: flags.string({description: 'Path to save the retrieved metadata files based on YAML'}),
+    packageBasePath: flags.string({description: 'Base path for sfdc package'}),
   }
 
   static args = [{name: 'file'}]

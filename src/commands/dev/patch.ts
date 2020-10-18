@@ -38,6 +38,7 @@ export default class DevPatch extends Command {
     const patchPath = patchPathBase + '/' + featureBranch.replace(/\//g, '-') + '.patch'
     const mergeBase = await execa('git', ['merge-base', featureBranch, developBranch])
     const baseCommit = mergeBase.stdout
+    console.log('Base commit: ' + baseCommit)
     
     let diff
     if (flags.syncUp) {
