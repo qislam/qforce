@@ -19,6 +19,7 @@
     "randomatic": "^3.1.1",
     "sfdx-node": "^2.2.0",
     "tslib": "^1.13.0",
+    "xml-js": "^1.6.11",
     "yaml": "^1.10.0"
   },
   "devDependencies": {

@@ -8,6 +8,7 @@ const fs = require('fs')
 const execa = require('execa')
 const YAML = require('yaml')
 const sfdx = require('sfdx-node')
+const xmljs = require('xml-js')
 const _ = require('lodash')
 
 export default class DevFeature extends Command {
@@ -19,6 +20,8 @@ export default class DevFeature extends Command {
     start: flags.boolean({char: 's', description: 'Start a new feature. Will create YAML file and folder if not already exist.'}),
     buildFromDiff: flags.boolean({char: 'b', description: 'Build metadata components by running a diff.'}),
     listFromDir: flags.boolean({char: 'l', description: 'Build metadata components based on directory contents.'}),
+    toXml: flags.boolean({description: 'Convert yml file to xml.'}),
+    toYaml: flags.boolean({description: 'Convert xml file to yml.'}),
     path: flags.string({char: 'p', description: 'Path to app directory.'}),
     retrieve: flags.boolean({char: 'r', description: 'Retrieve source based on YAML configuration.'}),
     deploy: flags.boolean({char: 'd', description: 'Deploys source already retrieved.'}),
@@ -148,6 +151,87 @@ export default class DevFeature extends Command {
       fs.writeFileSync(
         getAbsolutePath(yamlPath),
         YAML.stringify(featureYAML),
+        {encoding: 'utf-8'}
+      )
+    }
+
+    if (flags.toXml) {
+      cli.action.start('Creating xml package file for ' + args.featureName)
+      featureYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
+      let featureXML: looseObject
+      featureXML = {
+        declaration: {
+          attributes: {
+            version: '1.0',
+            encoding: 'UTF-8'
+          }
+        },
+        elements: [
+          {
+            type: 'element',
+            name: 'Package',
+            attributes: {
+              xmlns: 'http://soap.sforce.com/2006/04/metadata'
+            },
+            elements: []
+          }
+        ]
+      }
+
+      for (let metadataType in featureYAML) {
+        let typesElement: looseObject
+        typesElement = {
+          type: 'element',
+          name: 'types',
+          elements: []
+        }
+        if (metadataType == 'ManualSteps') continue;
+        if (featureYAML[metadataType]) {
+          for (let metadataName of featureYAML[metadataType]) {
+            typesElement.elements.push({
+              type: 'element',
+              name: 'members',
+              elements: [
+                {
+                  type: 'text',
+                  text: metadataName
+                }
+              ]
+            })
+          }
+          typesElement.elements.push({
+            type: 'element',
+            name: 'name',
+            elements: [
+              {
+                type: 'text',
+                text: metadataType
+              }
+            ]
+          })
+        }
+        featureXML.elements[0].elements.push(typesElement)
+      }
+      featureXML.elements[0].elements.push({
+        type: 'element',
+        name: 'version',
+        elements: [
+          {
+            type: 'text',
+            text: '50.0'
+          }
+        ]
+      })
+      let xmlOptions = {
+        spaces: 4, 
+        compact: false, 
+        declerationKey: 'decleration', 
+        attributesKey: 'attributes'
+      }
+      console.log(xmljs.js2xml(featureXML, xmlOptions))
+      fs.writeFileSync(
+        getAbsolutePath(yamlPath.replace(/yml$/i, 'xml')),
+        xmljs.js2xml(featureXML, xmlOptions),
         {encoding: 'utf-8'}
       )
     }
