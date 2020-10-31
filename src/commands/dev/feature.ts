@@ -94,6 +94,7 @@ export default class DevFeature extends Command {
       } 
       for (let filePath of filePaths) {
         if (flags.buildFromDiff && filePath.indexOf(packageBasePath) == -1) continue
+        if (!fs.existsSync(filePath)) continue
         const filePathParts = filePath.replace(packageBasePath + '/', '').split('/')
 
         let metadatType = metadataMap.get(filePathParts[0]) || filePathParts[0]
