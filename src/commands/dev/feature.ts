@@ -23,6 +23,7 @@ export default class DevFeature extends Command {
     toXml: flags.boolean({description: 'Convert yml file to xml.'}),
     toYaml: flags.boolean({description: 'Convert xml file to yml.'}),
     path: flags.string({char: 'p', description: 'Path to app directory.'}),
+    version: flags.string({description: 'API version to use for SFDX'}),
     retrieve: flags.boolean({char: 'r', description: 'Retrieve source based on YAML configuration.'}),
     deploy: flags.boolean({char: 'd', description: 'Deploys source already retrieved.'}),
     username: flags.string({char: 'u'}),
@@ -158,7 +159,8 @@ export default class DevFeature extends Command {
 
     this.log('Creating xml package file for ' + args.featureName)
     featureYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
-    let featureXML = yaml2xml(featureYAML, '50.0')
+    let apiVersion = `${flags.version || featureYAML.Version || '50'}.0`
+    let featureXML = yaml2xml(featureYAML, apiVersion)
     let xmlOptions = {
       spaces: 4, 
       compact: false, 

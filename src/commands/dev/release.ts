@@ -21,6 +21,7 @@ export default class DevRelease extends Command {
     retrieve: flags.boolean({char: 'r', description: 'Retrieve source based on YAML configuration.'}),
     deploy: flags.boolean({char: 'd', description: 'Deploys source already retrieved.'}), 
     username: flags.string({char: 'u'}),
+    version: flags.string({description: 'API version to use for SFDX'}),
     addFeature: flags.string({char: 'a', description: 'Adds one or more features to the release specified.'}),
     removeFeature: flags.string({char: 'R', description: 'Removes one or more features from the release specified.'}),
   }
@@ -128,7 +129,7 @@ export default class DevRelease extends Command {
       )
       cli.action.stop()
     }
-
+    let apiVersion = `${flags.version || releaseYaml.Version || '50'}.0`
     let releaseXML = yaml2xml(releaseYaml.components, '50.0')
     let xmlOptions = {
       spaces: 4, 

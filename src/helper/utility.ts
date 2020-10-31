@@ -251,6 +251,7 @@ function yaml2xml(featureYAML: looseObject, xmlVersion: string) {
   }
 
   for (let metadataType in featureYAML) {
+    if (metadataType == 'ManualSteps' || metadataType == 'Version') continue
     let typesElement: looseObject
     typesElement = {
       type: 'element',
