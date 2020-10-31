@@ -229,6 +229,74 @@ function setStepReferences(step: migrationStep, basePath: string) {
   return step
 }
 
+function yaml2xml(featureYAML: looseObject, xmlVersion: string) {
+  let featureXML: looseObject
+  featureXML = {
+    declaration: {
+      attributes: {
+        version: '1.0',
+        encoding: 'UTF-8'
+      }
+    },
+    elements: [
+      {
+        type: 'element',
+        name: 'Package',
+        attributes: {
+          xmlns: 'http://soap.sforce.com/2006/04/metadata'
+        },
+        elements: []
+      }
+    ]
+  }
+
+  for (let metadataType in featureYAML) {
+    let typesElement: looseObject
+    typesElement = {
+      type: 'element',
+      name: 'types',
+      elements: []
+    }
+    if (metadataType == 'ManualSteps') continue;
+    if (featureYAML[metadataType]) {
+      for (let metadataName of featureYAML[metadataType]) {
+        typesElement.elements.push({
+          type: 'element',
+          name: 'members',
+          elements: [
+            {
+              type: 'text',
+              text: metadataName
+            }
+          ]
+        })
+      }
+      typesElement.elements.push({
+        type: 'element',
+        name: 'name',
+        elements: [
+          {
+            type: 'text',
+            text: metadataType
+          }
+        ]
+      })
+    }
+    featureXML.elements[0].elements.push(typesElement)
+  }
+  featureXML.elements[0].elements.push({
+    type: 'element',
+    name: 'version',
+    elements: [
+      {
+        type: 'text',
+        text: xmlVersion
+      }
+    ]
+  })
+  return featureXML
+}
+
 export {
   deleteFolderRecursive,
   filterQueryFields, 
@@ -241,5 +309,6 @@ export {
   poll, 
   pollBulkStatus, 
   prepJsonForCsv,
-  setStepReferences
+  setStepReferences,
+  yaml2xml
 }

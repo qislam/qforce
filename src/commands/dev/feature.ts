@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
-import {getFiles, getAbsolutePath} from '../../helper/utility'
+import {getFiles, getAbsolutePath, yaml2xml} from '../../helper/utility'
 import {dxOptions, looseObject} from '../../helper/interfaces'
 const metaUtil = require('../../helper/metadataUtil')
 const path = require('path')
@@ -18,8 +18,8 @@ export default class DevFeature extends Command {
   static flags = {
     help: flags.help({char: 'h'}),
     start: flags.boolean({char: 's', description: 'Start a new feature. Will create YAML file and folder if not already exist.'}),
-    buildFromDiff: flags.boolean({char: 'b', description: 'Build metadata components by running a diff.'}),
-    listFromDir: flags.boolean({char: 'l', description: 'Build metadata components based on directory contents.'}),
+    buildFromDiff: flags.boolean({description: 'Build metadata components by running a diff.'}),
+    buildFromDir: flags.boolean({description: 'Build metadata components based on directory contents.'}),
     toXml: flags.boolean({description: 'Convert yml file to xml.'}),
     toYaml: flags.boolean({description: 'Convert xml file to yml.'}),
     path: flags.string({char: 'p', description: 'Path to app directory.'}),
@@ -56,7 +56,7 @@ export default class DevFeature extends Command {
     const featureYamlPath = settings.featureYamlPath || '.qforce/features'
     const featureMetaPath = settings.featureMetaPath || '.qforce/features'
     const packageBasePath = settings.packageBasePath || 'force-app/main/default'
-    const listFromDirPath = flags.path || packageBasePath
+    const buildFromDirPath = flags.path || packageBasePath
 
     let featureName = args.featureName.replace('/', '-')
     let featureYAML: looseObject
@@ -79,7 +79,7 @@ export default class DevFeature extends Command {
       cli.action.stop('File not found. Check file path. Remember to start a feature first.')
     }
 
-    if (flags.buildFromDiff || flags.listFromDir) {
+    if (flags.buildFromDiff || flags.buildFromDir) {
       if ( flags.buildFromDiff && (!args.commit1 || !args.commit2)) {
         cli.action.stop('Provide commits to calculate diff from.')
       } 
@@ -88,8 +88,8 @@ export default class DevFeature extends Command {
       if (flags.buildFromDiff) {
         const diffFiles = await execa('git', ['diff', '--name-only', args.commit1, args.commit2])
         filePaths = diffFiles.stdout.split('\n')
-      } else if (flags.listFromDir) {
-        filePaths = await getFiles(listFromDirPath)
+      } else if (flags.buildFromDir) {
+        filePaths = await getFiles(buildFromDirPath)
         filePaths = filePaths.map(absolutePath => path.relative('', absolutePath))
       } 
       for (let filePath of filePaths) {
@@ -155,150 +155,51 @@ export default class DevFeature extends Command {
       )
     }
 
-    if (flags.toXml) {
-      cli.action.start('Creating xml package file for ' + args.featureName)
-      featureYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
-      let featureXML: looseObject
-      featureXML = {
-        declaration: {
-          attributes: {
-            version: '1.0',
-            encoding: 'UTF-8'
-          }
-        },
-        elements: [
-          {
-            type: 'element',
-            name: 'Package',
-            attributes: {
-              xmlns: 'http://soap.sforce.com/2006/04/metadata'
-            },
-            elements: []
-          }
-        ]
-      }
-
-      for (let metadataType in featureYAML) {
-        let typesElement: looseObject
-        typesElement = {
-          type: 'element',
-          name: 'types',
-          elements: []
-        }
-        if (metadataType == 'ManualSteps') continue;
-        if (featureYAML[metadataType]) {
-          for (let metadataName of featureYAML[metadataType]) {
-            typesElement.elements.push({
-              type: 'element',
-              name: 'members',
-              elements: [
-                {
-                  type: 'text',
-                  text: metadataName
-                }
-              ]
-            })
-          }
-          typesElement.elements.push({
-            type: 'element',
-            name: 'name',
-            elements: [
-              {
-                type: 'text',
-                text: metadataType
-              }
-            ]
-          })
-        }
-        featureXML.elements[0].elements.push(typesElement)
-      }
-      featureXML.elements[0].elements.push({
-        type: 'element',
-        name: 'version',
-        elements: [
-          {
-            type: 'text',
-            text: '50.0'
-          }
-        ]
-      })
-      let xmlOptions = {
-        spaces: 4, 
-        compact: false, 
-        declerationKey: 'decleration', 
-        attributesKey: 'attributes'
-      }
-      console.log(xmljs.js2xml(featureXML, xmlOptions))
-      fs.writeFileSync(
-        getAbsolutePath(yamlPath.replace(/yml$/i, 'xml')),
-        xmljs.js2xml(featureXML, xmlOptions),
-        {encoding: 'utf-8'}
-      )
+    this.log('Creating xml package file for ' + args.featureName)
+    featureYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
+    let featureXML = yaml2xml(featureYAML, '50.0')
+    let xmlOptions = {
+      spaces: 4, 
+      compact: false, 
+      declerationKey: 'decleration', 
+      attributesKey: 'attributes'
     }
+    fs.writeFileSync(
+      getAbsolutePath(yamlPath.replace(/yml$/i, 'xml')),
+      xmljs.js2xml(featureXML, xmlOptions),
+      {encoding: 'utf-8'}
+    )
 
     const retrievePathBase = `${featureMetaPath}/${featureName}/metadata`
     if (flags.retrieve) {
-      cli.action.start('Retrieving feature ' + args.featureName)
-      featureYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
-      for (let metadataType in featureYAML) {
-        if (metadataType == 'ManualSteps') continue;
-        this.log(`Retrieving metadataType: ${metadataType}`);
-        if (featureYAML[metadataType]) {
-          for (let metadataName of featureYAML[metadataType]) {
-            this.log(`Retrieving: ${metadataType}:${metadataName}`);
-            await sfdx.source.retrieve({
-              metadata: `${metadataType}:${metadataName}`,
-              targetusername: targetusername,
-              _quiet: false,
-              _rejectOnError: true
-            }).then(
-              (result: any) => {
-                this.log(result)
-                for (let file of result.inboundFiles) {
-                  let retrievePath = `${retrievePathBase}/${file.filePath}` 
-                  if (!fs.existsSync(path.dirname(retrievePath))) {
-                    fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
-                  }
-                  fs.copyFileSync(file.filePath, retrievePath)
-                  this.log('Retrieved ' + file.filePath)
-                }
-              }
-            ).catch(
-              (error: any) => {
-                this.log(error)
-              }
-            )
+      cli.action.start('Retrieving package for ' + args.featureName)
+      await sfdx.source.retrieve({
+        manifest: yamlPath.replace(/yml$/i, 'xml'),
+        targetusername: targetusername,
+        _quiet: false,
+        _rejectOnError: true
+      }).then(
+        (result: any) => {
+          this.log(result)
+          for (let file of result.inboundFiles) {
+            let retrievePath = `${retrievePathBase}/${file.filePath}` 
+            if (!fs.existsSync(path.dirname(retrievePath))) {
+              fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
+            }
+            fs.copyFileSync(file.filePath, retrievePath)
+            this.log('Retrieved ' + file.filePath)
           }
-        } else {
-          await sfdx.source.retrieve({
-            metadata: metadataType,
-            targetusername: targetusername,
-            _quiet: false,
-            _rejectOnError: true
-          }).then(
-            (result: any) => {
-              this.log(result)
-              for (let file of result.inboundFiles) {
-                let retrievePath = `${retrievePathBase}/${file.filePath}` 
-                if (!fs.existsSync(path.dirname(retrievePath))) {
-                  fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
-                }
-                fs.copyFileSync(file.filePath, retrievePath)
-                this.log('Retrieved ' + file.filePath)
-              }
-            }
-          ).catch(
-            (error: any) => {
-              this.log(error)
-            }
-          )
         }
-      }
+      ).catch(
+        (error: any) => {
+          this.log(error)
+        }
+      )
     }
     
     if (flags.deploy) {
       sfdx.source.deploy({targetusername: targetusername, 
-        sourcepath: retrievePathBase, 
+        manifest: yamlPath.replace(/yml$/i, 'xml'), 
         json: true, 
         _rejectOnError: true})
       .then(

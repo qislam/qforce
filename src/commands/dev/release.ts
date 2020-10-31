@@ -1,12 +1,13 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
-import {deleteFolderRecursive, getAbsolutePath} from '../../helper/utility'
+import {deleteFolderRecursive, getAbsolutePath, yaml2xml} from '../../helper/utility'
 import {dxOptions, looseObject} from '../../helper/interfaces'
 const path = require('path')
 const fs = require('fs')
 const execa = require('execa')
 const YAML = require('yaml')
 const sfdx = require('sfdx-node')
+const xmljs = require('xml-js')
 const _ = require('lodash')
 
 export default class DevRelease extends Command {
@@ -128,7 +129,46 @@ export default class DevRelease extends Command {
       cli.action.stop()
     }
 
+    let releaseXML = yaml2xml(releaseYaml.components, '50.0')
+    let xmlOptions = {
+      spaces: 4, 
+      compact: false, 
+      declerationKey: 'decleration', 
+      attributesKey: 'attributes'
+    }
+    fs.writeFileSync(
+      getAbsolutePath(yamlPath.replace(/yml$/i, 'xml')),
+      xmljs.js2xml(releaseXML, xmlOptions),
+      {encoding: 'utf-8'}
+    )
+
     if (flags.retrieve) {
+      cli.action.start('Retrieving package for ' + args.featureName)
+      await sfdx.source.retrieve({
+        manifest: yamlPath.replace(/yml$/i, 'xml'),
+        targetusername: targetusername,
+        _quiet: false,
+        _rejectOnError: true
+      }).then(
+        (result: any) => {
+          this.log(result)
+          for (let file of result.inboundFiles) {
+            let retrievePath = `${retrievePathBase}/${file.filePath}` 
+            if (!fs.existsSync(path.dirname(retrievePath))) {
+              fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
+            }
+            fs.copyFileSync(file.filePath, retrievePath)
+            this.log('Retrieved ' + file.filePath)
+          }
+        }
+      ).catch(
+        (error: any) => {
+          this.log(error)
+        }
+      )
+    }
+
+    if (flags.retrieve && false) {
       cli.action.start('Retrieving release ' + args.releaseName)
       let components = releaseYaml.components
       if (!components) cli.action.stop('No components defined. Execute qforce release --build releaseName')
@@ -197,7 +237,7 @@ export default class DevRelease extends Command {
     
     if (flags.deploy) {
       sfdx.source.deploy({targetusername: targetusername, 
-        sourcepath: retrievePathBase, 
+        manifest: yamlPath.replace(/yml$/i, 'xml'),  
         json: true, 
         _rejectOnError: true,
         _quiet: true})
