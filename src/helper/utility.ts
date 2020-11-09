@@ -258,7 +258,6 @@ function yaml2xml(featureYAML: looseObject, xmlVersion: string) {
       name: 'types',
       elements: []
     }
-    if (metadataType == 'ManualSteps') continue;
     if (featureYAML[metadataType]) {
       for (let metadataName of featureYAML[metadataType]) {
         typesElement.elements.push({
@@ -272,6 +271,27 @@ function yaml2xml(featureYAML: looseObject, xmlVersion: string) {
           ]
         })
       }
+      typesElement.elements.push({
+        type: 'element',
+        name: 'name',
+        elements: [
+          {
+            type: 'text',
+            text: metadataType
+          }
+        ]
+      })
+    } else {
+      typesElement.elements.push({
+        type: 'element',
+        name: 'members',
+        elements: [
+          {
+            type: 'text',
+            text: '*'
+          }
+        ]
+      })
       typesElement.elements.push({
         type: 'element',
         name: 'name',
