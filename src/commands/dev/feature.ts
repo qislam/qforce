@@ -8,6 +8,7 @@ const fs = require('fs')
 const execa = require('execa')
 const YAML = require('yaml')
 const sfdx = require('sfdx-node')
+const csvjson = require('csvjson')
 const xmljs = require('xml-js')
 const _ = require('lodash')
 
@@ -20,9 +21,10 @@ export default class DevFeature extends Command {
     start: flags.boolean({char: 's', description: 'Start a new feature. Will create YAML file and folder if not already exist.'}),
     buildFromDiff: flags.boolean({description: 'Build metadata components by running a diff.'}),
     buildFromDir: flags.boolean({description: 'Build metadata components based on directory contents.'}),
+    buildFromCsv: flags.boolean({description: 'Build metadata components based on a csv file.'}),
     toXml: flags.boolean({description: 'Convert yml file to xml.'}),
     toYaml: flags.boolean({description: 'Convert xml file to yml.'}),
-    path: flags.string({char: 'p', description: 'Path to app directory.'}),
+    path: flags.string({char: 'p', description: 'Path to app directory or csv file.'}),
     version: flags.string({description: 'API version to use for SFDX'}),
     retrieve: flags.boolean({char: 'r', description: 'Retrieve source based on YAML configuration.'}),
     deploy: flags.boolean({char: 'd', description: 'Deploys source already retrieved.'}),
@@ -80,8 +82,35 @@ export default class DevFeature extends Command {
       cli.action.stop('File not found. Check file path. Remember to start a feature first.')
     }
 
+    if (flags.buildFromCsv) {
+      let csvPath = flags.path || ''
+      if (!csvPath) {
+        cli.action.stop('File not not provided. Must be relative to current directory')
+      }
+      if (!fs.existsSync(getAbsolutePath(csvPath))) {
+        cli.action.stop('File not found. Check file path. Must be relative to current directory')
+      }
+      let featureCSV = csvjson.toObject(fs.readFileSync(csvPath, 'utf-8'))
+      featureYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
+      for (let metadataRecord of featureCSV) {
+        let metadatType = metadataRecord.MetadataType
+        let metadatName = metadataRecord.MetadataName
+        if (!featureYAML[metadatType]) featureYAML[metadatType] = []
+        featureYAML[metadatType].push(metadatName)
+      }
+
+      for (let key in featureYAML) {
+        featureYAML[key] = _.uniqWith(featureYAML[key], _.isEqual)
+      }
+      fs.writeFileSync(
+        getAbsolutePath(yamlPath),
+        YAML.stringify(featureYAML),
+        {encoding: 'utf-8'}
+      )
+    }
+
     if (flags.buildFromDiff || flags.buildFromDir) {
-      if ( flags.buildFromDiff && (!args.commit1 || !args.commit2)) {
+      if (flags.buildFromDiff && (!args.commit1 || !args.commit2)) {
         cli.action.stop('Provide commits to calculate diff from.')
       } 
       featureYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
