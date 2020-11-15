@@ -2,7 +2,7 @@ import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
 import {getFiles, getAbsolutePath, yaml2xml} from '../../helper/utility'
 import {dxOptions, looseObject} from '../../helper/interfaces'
-const metaUtil = require('../../helper/metadataUtil')
+import {updateFeatureYAML} from '../../helper/metadata'
 const path = require('path')
 const fs = require('fs')
 const execa = require('execa')
@@ -53,17 +53,14 @@ export default class DevFeature extends Command {
         fs.readFileSync(path.join(process.cwd(), '.sfdx', 'sfdx-config.json'))
       )
     }
-    const metadataMap = metaUtil.metadataMap
-    const metadataRegex = metaUtil.metadataRegex
     const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
     const featureYamlPath = settings.featureYamlPath || '.qforce/features'
-    const featureMetaPath = settings.featureMetaPath || '.qforce/features'
     const packageBasePath = settings.packageBasePath || 'force-app/main/default'
     const buildFromDirPath = flags.path || packageBasePath
 
     let featureName = args.featureName.replace('/', '-')
     let featureYAML: looseObject
-    let yamlPath = `${featureYamlPath}/${featureName}/${featureName}.yml`
+    let yamlPath = `${featureYamlPath}/${featureName}.yml`
 
     if (flags.start) {
       if (!fs.existsSync(path.dirname(yamlPath))) {
@@ -122,63 +119,12 @@ export default class DevFeature extends Command {
         filePaths = await getFiles(buildFromDirPath)
         filePaths = filePaths.map(absolutePath => path.relative('', absolutePath))
       } 
-      for (let filePath of filePaths) {
-        if (flags.buildFromDiff && filePath.indexOf(packageBasePath) == -1) continue
-        if (!fs.existsSync(filePath)) continue
-        const filePathParts = filePath.replace(packageBasePath + '/', '').split('/')
-
-        let metadatType = metadataMap.get(filePathParts[0]) || filePathParts[0]
-        let metadatName = filePathParts[1]
-        // apply regex when available
-        if (metadataRegex.get(filePathParts[0])) {
-          metadatName = filePathParts[1].replace(metadataRegex.get(filePathParts[0]), '')
-        }
-        if (metadatType == 'CustomLabels') continue
-        if (metadatType == 'CustomObject' && filePathParts.length > 2) {
-          if (filePathParts[2] == 'fields') {
-            let compName = filePathParts[3].replace(/\.field-meta\.xml$/i, '')
-            if (!featureYAML.CustomField) featureYAML.CustomField = []
-            featureYAML.CustomField.push(metadatName + '.' + compName)
-          }
-          if (filePathParts[2] == 'recordTypes') {
-            let compName = filePathParts[3].replace(/\.recordType-meta\.xml$/i, '')
-            if (!featureYAML.RecordType) featureYAML.RecordType = []
-            featureYAML.RecordType.push(metadatName + '.' + compName)
-          }
-          if (filePathParts[2] == 'compactLayouts') {
-            let compName = filePathParts[3].replace(/\.compactLayout-meta\.xml$/i, '')
-            if (!featureYAML.CompactLayout) featureYAML.CompactLayout = []
-            featureYAML.CompactLayout.push(metadatName + '.' + compName)
-          }
-          if (filePathParts[2] == 'listViews') {
-            let compName = filePathParts[3].replace(/\.listView-meta\.xml$/i, '')
-            if (!featureYAML.ListView) featureYAML.ListView = []
-            featureYAML.ListView.push(metadatName + '.' + compName)
-          }
-          if (filePathParts[2] == 'webLinks') {
-            let compName = filePathParts[3].replace(/\.webLink-meta\.xml$/i, '')
-            if (!featureYAML.WebLink) featureYAML.WebLink = []
-            featureYAML.WebLink.push(metadatName + '.' + compName)
-          }
-        }
-        if (metadatType == 'DocumentFolder' && filePathParts.length > 2) {
-          let documentName = filePathParts[2].replace(/\..*$/i, '')
-          if (!featureYAML.Document) featureYAML.Document = []
-          featureYAML.Document.push(metadatName + '/' + documentName)
-        }
-        if (metadatType == 'EmailFolder' && filePathParts.length > 2) {
-          let emailTemplate = filePathParts[2].replace(/\..*$/i, '')
-          if (!featureYAML.EmailTemplate) featureYAML.EmailTemplate = []
-          featureYAML.EmailTemplate.push(metadatName + '/' + emailTemplate)
-        }
-        //let metadatName = filePathParts[1].replace(/\..*\.xml$/i, '').replace(/\.(cls|page|asset|trigger)$/i, '')
-        if (!featureYAML[metadatType]) featureYAML[metadatType] = []
-        
-        featureYAML[metadatType].push(metadatName)
-      }
+      featureYAML = updateFeatureYAML(featureYAML, filePaths, packageBasePath)
+      
       for (let key in featureYAML) {
         featureYAML[key] = _.uniqWith(featureYAML[key], _.isEqual)
       }
+
       fs.writeFileSync(
         getAbsolutePath(yamlPath),
         YAML.stringify(featureYAML),
@@ -202,7 +148,6 @@ export default class DevFeature extends Command {
       {encoding: 'utf-8'}
     )
 
-    const retrievePathBase = `${featureMetaPath}/${featureName}/metadata`
     if (flags.retrieve) {
       cli.action.start('Retrieving package for ' + args.featureName)
       await sfdx.source.retrieve({
@@ -213,14 +158,6 @@ export default class DevFeature extends Command {
       }).then(
         (result: any) => {
           this.log(result)
-          for (let file of result.inboundFiles) {
-            let retrievePath = `${retrievePathBase}/${file.filePath}` 
-            if (!fs.existsSync(path.dirname(retrievePath))) {
-              fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
-            }
-            fs.copyFileSync(file.filePath, retrievePath)
-            this.log('Retrieved ' + file.filePath)
-          }
         }
       ).catch(
         (error: any) => {

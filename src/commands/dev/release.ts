@@ -44,13 +44,12 @@ export default class DevRelease extends Command {
     }
     const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
     const releaseYamlPath = settings.releaseYamlPath || '.qforce/releases'
-    const releaseMetaPath = settings.releaseMetaPath || '.qforce/releases'
     const featureYamlPath = settings.featureYamlPath || '.qforce/features'
 
     let releaseName = args.releaseName.replace('/', '-')
 
     if (flags.start) {
-      let yamlPath = `${releaseYamlPath}/${releaseName}/${releaseName}.yml`
+      let yamlPath = `${releaseYamlPath}/${releaseName}.yml`
       if (!fs.existsSync(path.dirname(yamlPath))) {
         fs.mkdirSync(path.dirname(yamlPath), {recursive: true})
       }
@@ -65,13 +64,11 @@ export default class DevRelease extends Command {
       execa.commandSync(command)
     }
 
-    let yamlPath = `${releaseYamlPath}/${releaseName}/${releaseName}.yml`
+    let yamlPath = `${releaseYamlPath}/${releaseName}.yml`
     if (!fs.existsSync(getAbsolutePath(yamlPath))) {
       cli.action.stop('File not found. Check file path. Remember to start a feature first.')
     }
     const releaseYaml = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
-    //cli.action.start(releaseYaml.features)
-    const retrievePathBase = `${releaseMetaPath}/${releaseName}/metadata`
 
     if (flags.addFeature) {
       cli.action.start('Adding feature to the release')
@@ -153,14 +150,6 @@ export default class DevRelease extends Command {
       }).then(
         (result: any) => {
           this.log(result)
-          for (let file of result.inboundFiles) {
-            let retrievePath = `${retrievePathBase}/${file.filePath}` 
-            if (!fs.existsSync(path.dirname(retrievePath))) {
-              fs.mkdirSync(path.dirname(retrievePath), {recursive: true})
-            }
-            fs.copyFileSync(file.filePath, retrievePath)
-            this.log('Retrieved ' + file.filePath)
-          }
         }
       ).catch(
         (error: any) => {

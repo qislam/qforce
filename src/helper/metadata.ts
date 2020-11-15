@@ -4,58 +4,59 @@ const path = require('path')
 const fs = require('fs')
 
 let metadataMap = new Map()
-metadataMap.set('aura', {name: 'AuraDefinitionBundle', regex: , folder: 'aura'})
-metadataMap.set('lwc', {name: 'LightningComponentBundle', folder: 'lwc'})
-metadataMap.set('authproviders', {name: 'AuthProvider', regex: , folder: 'authproviders'})
 metadataMap.set('classes', {name: 'ApexClass', regex: /\.(cls|cls-meta.xml)$/i, folder: 'classes'})
 metadataMap.set('applications', {name: 'CustomApplication', regex: /\.app-meta\.xml$/i, folder: 'applications'})
 metadataMap.set('aura', {name: 'AuraDefinitionBundle', folder: 'aura'})
 metadataMap.set('lwc', {name: 'LightningComponentBundle', folder: 'lwc'})
-metadataMap.set('authproviders', {name: 'AuthProvider', folder: 'authproviders'})
-metadataMap.set('contentassets', {name: 'ContentAsset', folder: 'contentassets'})
-metadataMap.set('customMetadata', {name: 'CustomMetadata', folder: 'customMetadata'})
-metadataMap.set('customPermissions', {name: 'CustomPermission', folder: 'customPermissions'})
-metadataMap.set('documents', {name: 'DocumentFolder', folder: 'documents'})
-metadataMap.set('email', {name: 'EmailFolder', folder: 'email'})
-metadataMap.set('flexipages', {name: 'FlexiPage', folder: 'flexipages'})
-metadataMap.set('flows', {name: 'Flow', folder: 'flows'})
-metadataMap.set('globalValueSetTranslations', {name: 'GlobalValueSetTranslation', folder: 'globalValueSetTranslations'})
-metadataMap.set('globalValueSets', {name: 'GlobalValueSet', folder: 'globalValueSets'})
-metadataMap.set('groups', {name: 'Group', folder: 'groups'})
+metadataMap.set('authproviders', {name: 'AuthProvider', regex: /\.authprovider-meta\.xml$/i, folder: 'authproviders'})
+metadataMap.set('contentassets', {name: 'ContentAsset', regex: /\.(asset|asset-meta\.xml)$/i, folder: 'contentassets'})
+metadataMap.set('customMetadata', {name: 'CustomMetadata', regex: /\.md-meta\.xml$/i, folder: 'customMetadata'})
+metadataMap.set('customPermissions', {name: 'CustomPermission', regex: /\.customPermission-meta\.xml$/i, folder: 'customPermissions'})
+metadataMap.set('documents', {name: 'DocumentFolder', regex: /\.documentFolder-meta\.xml$/i, folder: 'documents'})
+metadataMap.set('email', {name: 'EmailFolder', regex: /\.emailFolder-meta\.xml$/i, folder: 'email'})
+metadataMap.set('flexipages', {name: 'FlexiPage', regex: /\.flexipage-meta\.xml$/i, folder: 'flexipages'})
+metadataMap.set('flows', {name: 'Flow', regex: /\.flow-meta\.xml$/i, folder: 'flows'})
+metadataMap.set('globalValueSetTranslations', {name: 'GlobalValueSetTranslation', regex: /\.globalValueSetTranslation-meta\.xml$/i, folder: 'globalValueSetTranslations'})
+metadataMap.set('globalValueSets', {name: 'GlobalValueSet', regex: /\.globalValueSet-meta\.xml$/i, folder: 'globalValueSets'})
+metadataMap.set('groups', {name: 'Group', regex: /\.group-meta\.xml$/i, folder: 'groups'})
 metadataMap.set('labels', {name: 'CustomLabels', folder: 'labels'})
-metadataMap.set('layouts', {name: 'Layout', folder: 'layouts'})
-metadataMap.set('letterhead', {name: 'Letterhead', folder: 'letterhead'})
-metadataMap.set('namedCredentials', {name: 'NamedCredential', folder: 'namedCredentials'})
+metadataMap.set('layouts', {name: 'Layout', regex: /\.layout-meta\.xml$/i, folder: 'layouts'})
+metadataMap.set('letterhead', {name: 'Letterhead', regex: /\.letter-meta\.xml$/i, folder: 'letterhead'})
+metadataMap.set('namedCredentials', {name: 'NamedCredential', regex: /\.namedCredential-meta\.xml$/i, folder: 'namedCredentials'})
 metadataMap.set('objects', {name: 'CustomObject', folder: 'objects'})
-metadataMap.set('pages', {name: 'ApexPage', folder: 'pages'})
-metadataMap.set('pathAssistants', {name: 'PathAssistant', folder: 'pathAssistants'})
-metadataMap.set('permissionsets', {name: 'PermissionSet', folder: 'permissionsets'})
-metadataMap.set('queues', {name: 'Queue', folder: 'queues'})
-metadataMap.set('queueRoutingConfigs', {name: 'QueueRoutingConfig', folder: 'queueRoutingConfigs'})
-metadataMap.set('quickActions', {name: 'QuickAction', folder: 'quickActions'})
-metadataMap.set('remoteSiteSettings', {name: 'RemoteSiteSetting', folder: 'remoteSiteSettings'})
-metadataMap.set('reportTypes', {name: 'ReportType', folder: 'reportTypes'})
-metadataMap.set('roles', {name: 'Role', folder: 'roles'})
-metadataMap.set('staticresources', {name: 'StaticResource', folder: 'staticresources'})
-metadataMap.set('tabs', {name: 'CustomTab', folder: 'tabs'})
-metadataMap.set('triggers', {name: 'ApexTrigger', folder: 'triggers'})
-metadataMap.set('workflows', {name: 'Workflow', folder: 'workflows'})
+metadataMap.set('pages', {name: 'ApexPage', regex: /\.(page|page-meta\.xml)$/i, folder: 'pages'})
+metadataMap.set('pathAssistants', {name: 'PathAssistant', regex: /\.pathAssistant-meta\.xml$/i, folder: 'pathAssistants'})
+metadataMap.set('permissionsets', {name: 'PermissionSet', regex: /\.permissionset-meta\.xml$/i, folder: 'permissionsets'})
+metadataMap.set('queues', {name: 'Queue', regex: /\.queue-meta\.xml$/i, folder: 'queues'})
+metadataMap.set('queueRoutingConfigs', {name: 'QueueRoutingConfig', regex: /\.queueRoutingConfig-meta\.xml$/i, folder: 'queueRoutingConfigs'})
+metadataMap.set('quickActions', {name: 'QuickAction', regex: /\.quickAction-meta\.xml$/i, folder: 'quickActions'})
+metadataMap.set('remoteSiteSettings', {name: 'RemoteSiteSetting', regex: /\.remoteSite-meta\.xml$/i, folder: 'remoteSiteSettings'})
+metadataMap.set('reportTypes', {name: 'ReportType', regex: /\.reportType-meta\.xml$/i, folder: 'reportTypes'})
+metadataMap.set('roles', {name: 'Role', regex: /\.role-meta\.xml$/i, folder: 'roles'})
+metadataMap.set('staticresources', {name: 'StaticResource', regex: /\..*$/i, folder: 'staticresources'})
+metadataMap.set('tabs', {name: 'CustomTab', regex: /\.tab-meta\.xml$/i, folder: 'tabs'})
+metadataMap.set('triggers', {name: 'ApexTrigger', regex: /\.(trigger|trigger-meta.xml)$/i, folder: 'triggers'})
+metadataMap.set('workflows', {name: 'Workflow', regex: /\.workflow-meta\.xml$/i, folder: 'workflows'})
 
 function updateFeatureYAML(
   featureYAML: looseObject = {}, 
   filePaths = [''], 
-  packageBasePath = 'force-app/main/default') 
+  packageBasePath = 'force-app/main/default'): looseObject
 {
   for (let filePath of filePaths) {
     if (!filePath) continue
     if (filePath.indexOf(packageBasePath) == -1) continue
     if (!fs.existsSync(filePath)) continue
     const filePathParts = filePath.replace(packageBasePath + '/', '').split('/')
+    
+    let metadatType = filePathParts[0]
+    if (metadataMap.get(filePathParts[0]) && metadataMap.get(filePathParts[0]).name) {
+      metadatType = metadataMap.get(filePathParts[0]).name
+    }
 
-    let metadatType = metadataMap.get(filePathParts[0]).name || filePathParts[0]
     let metadatName = filePathParts[1]
     // apply regex when available
-    if (metadataMap.get(filePathParts[0]).regex) {
+    if (metadataMap.get(filePathParts[0]) && metadataMap.get(filePathParts[0]).regex) {
       metadatName = filePathParts[1].replace(metadataMap.get(filePathParts[0]).regex, '')
     }
     if (metadatType == 'CustomLabels') continue
@@ -99,9 +100,9 @@ function updateFeatureYAML(
     //let metadatName = filePathParts[1].replace(/\..*\.xml$/i, '').replace(/\.(cls|page|asset|trigger)$/i, '')
     if (!featureYAML[metadatType]) featureYAML[metadatType] = []
     featureYAML[metadatType].push(metadatName)
-
-    return featureYAML
   }
+
+  return featureYAML
 }
 
 export {metadataMap, updateFeatureYAML}
