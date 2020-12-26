@@ -18,6 +18,7 @@ const fs = require('fs')
 const csvjson = require('csvjson')
 const lodash = require('lodash')
 const sha1 = require('js-sha1')
+const debug = require('debug')('qforce')
 
 export default class Migrate extends Command {
   static description = 'Migrate data from one org to another based on a migration plan.'
@@ -41,7 +42,11 @@ export default class Migrate extends Command {
         fs.readFileSync(getAbsolutePath('.qforce/settings.json'))
       )
     }
+    debug('settings: \n' + JSON.stringify(settings, null, 4))
+
     const {flags} = this.parse(Migrate)
+    debug('flags: \n' + JSON.stringify(flags, null, 4))
+
     if (flags.sample) {
       for(let key in allSamples) {
         fs.writeFileSync(
@@ -52,21 +57,28 @@ export default class Migrate extends Command {
       }
       return
     }
+
     let file = flags.file || 'migrationPlan.js'
     if(!fs.existsSync(getAbsolutePath(file)) && settings.migrateBasePath) {
       file = settings.migrateBasePath + '/' + file
     }
+    debug('file: ' + file)
+
     if(!fs.existsSync(getAbsolutePath(file))) {
       this.log('No plan file provided. Run "qforce dev:migrate --sample" to get a sample.')
     }
+
     let basePath = file.split('/')
     basePath.pop()
+    debug('basePath: ' + basePath)
 
     let dataPath = basePath.slice()
     dataPath.push('data')
+    debug('dataPath: ' + dataPath)
 
     let refPath = basePath.slice()
     refPath.push('reference')
+    debug('refPath: ' + refPath)
 
     if(flags.clearDataFolder) {
       if(fs.existsSync(path.join(process.cwd(), ...dataPath))) {
@@ -91,10 +103,12 @@ export default class Migrate extends Command {
     }
 
     if (migrationPlan.calculateFlags) {
+      debug('calculateFlags started.')
       for (let key in globalVars) {
         if (key != 'plan') migrationPlan[key] = globalVars[key]
       }
       migrationPlan.calculateFlags.call(migrationPlan)
+      debug('calculateFlags ended.')
     }
     // Clear data folder will delete all existing csv files in data folder
     if(migrationPlan.clearDataFolder) {
@@ -107,11 +121,15 @@ export default class Migrate extends Command {
         deleteFolderRecursive(refPath.join('/'))
       }
     }
+
     const startIndex = migrationPlan.startIndex || 0
     const stopIndex = migrationPlan.stopIndex || migrationPlan.steps.length
+
     for (let i = startIndex; i < stopIndex; i++) {
       let step: migrationStep = migrationPlan.steps[i]
       if (!step.name) continue;
+      debug(step.name + ' started.')
+
       if (flags.name) {
         if (step.name != flags.name) continue
       }
@@ -132,6 +150,8 @@ export default class Migrate extends Command {
       }
       if (step.apexCodeFile && (flags.destination || migrationPlan.destination)) {
         let apexCodePath: string = getAbsolutePath(step.apexCodeFile)
+        debug('apexCodePath: ' + apexCodePath)
+
         if (!fs.existsSync(apexCodePath)) {
           this.log(apexCodePath + ' does not exist')
           apexCodePath = getAbsolutePath(basePath.join('/') + '/' + step.apexCodeFile)
@@ -146,6 +166,8 @@ export default class Migrate extends Command {
         options.apexcodefile = apexCodePath
         options.targetusername = flags.destination || migrationPlan.destination
         let exeResults = await sfdx.apex.execute(options)
+        debug('exeResults: \n' + JSON.stringify(exeResults, null, 4))
+
         if (exeResults && exeResults.logs) this.log(exeResults.logs)
         continue;
       }
@@ -180,26 +202,33 @@ export default class Migrate extends Command {
         } else {
           targetusername = flags.source || migrationPlan.source || step.source
         }
+        debug('targetusername: ' + targetusername)
+
         let queryString: any = step.query
         if (queryString.includes('*')) {
           queryString = await getQueryAll(queryString, targetusername, true)
         }
+        debug('queryString: ' + queryString)
+        
         let options: dxOptions = {}
         options.query = queryString
         options.targetusername = targetusername
         let queryResult: any
         try {
-          queryResult= await sfdx.data.soqlQuery(options)
+          queryResult = await sfdx.data.soqlQuery(options)
         } catch(err) {
           cli.action.stop('Error in querying the data: ' + JSON.stringify(err, null, 2))
           if(settings.ignoreError) continue
           else break
         }
+        debug('Before Transform queryResult: \n' + JSON.stringify(queryResult, null, 4))
+
         queryResult.records.map(handleNullValues)
         if (step.transform) queryResult.records.map(step.transform.bind(step))
         if (step.transformAll) {
           queryResult.records = step.transformAll.call(step, queryResult.records)
         }
+        debug('Before Transform queryResult: \n' + JSON.stringify(queryResult, null, 4))
 
         if(step.referenceOnly || step.isReference) {
           if(!fs.existsSync(path.join(process.cwd(), ...refPath))) {
@@ -213,6 +242,8 @@ export default class Migrate extends Command {
         } 
         // remove attributes property and csv cleanup
         queryResult.records.map(prepJsonForCsv)
+        debug('Prep for CSV queryResult: \n' + JSON.stringify(queryResult, null, 4))
+
         if (!step.referenceOnly) {
           if(!fs.existsSync(path.join(process.cwd(), ...dataPath))) {
             fs.mkdirSync(path.join(process.cwd(), ...dataPath), {recursive: true})
@@ -225,14 +256,19 @@ export default class Migrate extends Command {
         }
         cli.action.stop()
       } 
+
       if (step.referenceOnly) continue
       let loadResults: any
       if (step.isDelete) {
         cli.action.start(i + ' - Step ' + step.name + ' deleting data')
-        let options: dxOptions = {}
+        let options: dxOptions = {
+          json: true, 
+          _rejectOnError: true}
         options.targetusername = flags.destination || migrationPlan.destination || step.destination
         options.csvfile = path.join(process.cwd(), ...dataPath, `${step.name}.csv`)
         options.sobjecttype = step.sobjecttype || step.sObjectType
+        debug('bulkDelete options: \n' + JSON.stringify(options, null, 4))
+
         try {
           loadResults = await sfdx.data.bulkDelete(options)
           this.log(loadResults)
@@ -246,11 +282,15 @@ export default class Migrate extends Command {
         }
       } else if (flags.destination || migrationPlan.destination || step.destination) {
         cli.action.start(i + ' - Step ' + step.name + ' uploading data')
-        let options: dxOptions = {}
+        let options: dxOptions = {
+          json: true, 
+          _rejectOnError: true}
         options.targetusername = flags.destination || migrationPlan.destination || step.destination
         options.csvfile = path.join(process.cwd(), ...dataPath, `${step.name}.csv`)
-        if(step.externalid) options.externalid = step.externalid || step.externalId
+        if(step.externalid || step.externalId) options.externalid = step.externalid || step.externalId
         options.sobjecttype = step.sobjecttype || step.sObjectType
+        debug('bulkUpsert options: \n' + JSON.stringify(options, null, 4))
+
         try {
           loadResults = await sfdx.data.bulkUpsert(options)
           this.log('Load Results: ' + JSON.stringify(loadResults, null, 4))
@@ -267,13 +307,16 @@ export default class Migrate extends Command {
       }
 
       if (!loadResults) continue
-      let options: dxOptions = {}
+      let options: dxOptions = {
+        json: true, 
+        _rejectOnError: true}
       let pollResults: any
 
       try {
         options.targetusername = flags.destination || migrationPlan.destination
         options.jobid = loadResults[0].jobId
         options.batchid = loadResults[0].id
+        debug('bulkUpsert Status check options: \n' + JSON.stringify(options, null, 4))
 
         pollResults = await pollBulkStatus(options
           , migrationPlan.bulkStatusRetries
@@ -295,6 +338,7 @@ export default class Migrate extends Command {
         if (manualCheck) continue
         else break
       }
+      debug(step.name + ' finished.')
 
       cli.action.stop()
     }

@@ -9,6 +9,7 @@ node_modules
 .editorconfig
 /.qforce
 /stuff
+.vscode/
 
 _site
 .sass-cache

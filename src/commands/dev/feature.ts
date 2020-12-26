@@ -1,4 +1,5 @@
 import {Command, flags} from '@oclif/command'
+const debug = require('debug')('qforce')
 import cli from 'cli-ux'
 import {getFiles, getAbsolutePath, yaml2xml} from '../../helper/utility'
 import {dxOptions, looseObject} from '../../helper/interfaces'
@@ -39,6 +40,8 @@ export default class DevFeature extends Command {
 
   async run() {
     const {args, flags} = this.parse(DevFeature)
+    debug('args: ' + JSON.stringify(args, null, 4))
+    debug('flags: ' + JSON.stringify(flags, null, 4))
 
     cli.action.start('started processing feature ' + args.featureName)
 
@@ -54,23 +57,33 @@ export default class DevFeature extends Command {
       )
     }
     const targetusername = flags.username || settings.targetusername || sfdxConfig.defaultusername
+    debug('targetusername: ' + targetusername)
+
     const featureYamlPath = settings.featureYamlPath || '.qforce/features'
+    debug('featureYamlPath: ' + featureYamlPath)
+
     const packageBasePath = settings.packageBasePath || 'force-app/main/default'
+    debug('packageBasePath: ' + packageBasePath)
+
     const buildFromDirPath = flags.path || packageBasePath
+    debug('buildFromDirPath: ' + buildFromDirPath)
 
     let featureName = args.featureName.replace('/', '-')
     let featureYAML: looseObject
     let yamlPath = `${featureYamlPath}/${featureName}.yml`
+    debug('Calculated yamlPath: ' + yamlPath)
 
     if (flags.start) {
       if (!fs.existsSync(path.dirname(yamlPath))) {
+        debug('Creating dir at yamlPath: ' + yamlPath)
         fs.mkdirSync(path.dirname(yamlPath), {recursive: true})
       }
       fs.writeFileSync(
         getAbsolutePath(yamlPath),
-        YAML.stringify({ManualSteps: [{ExampleManualStep: []}]}),
+        YAML.stringify({CustomObject: ['Account']}),
         {encoding: 'utf-8'}
       )
+      debug('Opening yaml file in VS Code')
       let command = `code ${yamlPath}`
       execa.commandSync(command)
     }
@@ -88,17 +101,23 @@ export default class DevFeature extends Command {
         cli.action.stop('File not found. Check file path. Must be relative to current directory')
       }
       let featureCSV = csvjson.toObject(fs.readFileSync(csvPath, 'utf-8'))
+      debug('featureCSV first record: ' + JSON.stringify(featureCSV[0], null, 4))
+
       featureYAML = YAML.parse(fs.readFileSync(yamlPath, 'utf-8'))
+
       for (let metadataRecord of featureCSV) {
+        debug('metadataRecord: ' + JSON.stringify(metadataRecord, null, 4))
         let metadatType = metadataRecord.MetadataType
         let metadatName = metadataRecord.MetadataName
         if (!featureYAML[metadatType]) featureYAML[metadatType] = []
         featureYAML[metadatType].push(metadatName)
+        debug('featureYAML: ' + JSON.stringify(featureYAML, null, 4))
       }
 
       for (let key in featureYAML) {
         featureYAML[key] = _.uniqWith(featureYAML[key], _.isEqual)
       }
+      
       fs.writeFileSync(
         getAbsolutePath(yamlPath),
         YAML.stringify(featureYAML),
