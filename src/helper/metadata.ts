@@ -1,4 +1,5 @@
 import { looseObject } from './interfaces'
+const debug = require('debug')('qforce')
 
 const path = require('path')
 const fs = require('fs')
@@ -43,21 +44,29 @@ function updateFeatureYAML(
   filePaths = [''], 
   packageBasePath = 'force-app/main/default'): looseObject
 {
+  debug('START updateFeatureYAML \n')
+  debug('filePaths: \n' + JSON.stringify(filePaths, null, 4))
   for (let filePath of filePaths) {
-    if (!filePath) continue
+    debug('filePath: ' + filePath)
+    
     if (filePath.indexOf(packageBasePath) == -1) continue
     if (!fs.existsSync(filePath)) continue
+
     const filePathParts = filePath.replace(packageBasePath + '/', '').split('/')
+    debug('filePathParts: \n' + JSON.stringify(filePathParts, null, 4))
     
     let metadatType = filePathParts[0]
+    debug('metadatType: ' + metadatType)
     if (metadataMap.get(filePathParts[0]) && metadataMap.get(filePathParts[0]).name) {
       metadatType = metadataMap.get(filePathParts[0]).name
     }
 
     let metadatName = filePathParts[1]
+    debug('metadatName: ' + metadatName)
     // apply regex when available
     if (metadataMap.get(filePathParts[0]) && metadataMap.get(filePathParts[0]).regex) {
       metadatName = filePathParts[1].replace(metadataMap.get(filePathParts[0]).regex, '')
+      debug('REGEX applied - metadatName: ' + metadatName)
     }
     if (metadatType == 'CustomLabels') continue
     if (metadatType == 'CustomObject' && filePathParts.length > 2) {
@@ -100,8 +109,9 @@ function updateFeatureYAML(
     //let metadatName = filePathParts[1].replace(/\..*\.xml$/i, '').replace(/\.(cls|page|asset|trigger)$/i, '')
     if (!featureYAML[metadatType]) featureYAML[metadatType] = []
     featureYAML[metadatType].push(metadatName)
+    debug('featureYAML: \n' + JSON.stringify(featureYAML, null, 4))
   }
-
+  debug('END updateFeatureYAML \n')
   return featureYAML
 }
 

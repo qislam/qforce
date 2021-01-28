@@ -116,6 +116,8 @@ export default class DevFeature extends Command {
 
       for (let key in featureYAML) {
         featureYAML[key] = _.uniqWith(featureYAML[key], _.isEqual)
+        if (key == 'ManualSteps' || key == 'Version') continue
+        featureYAML[key].sort()
       }
       
       fs.writeFileSync(
@@ -133,7 +135,9 @@ export default class DevFeature extends Command {
       let filePaths
       if (flags.buildFromDiff) {
         const diffFiles = await execa('git', ['diff', '--name-only', args.commit1, args.commit2])
+        debug('diffFiles: \n' + JSON.stringify(diffFiles, null, 4))
         filePaths = diffFiles.stdout.split('\n')
+        debug('filePaths: \n' + JSON.stringify(filePaths, null, 4))
       } else if (flags.buildFromDir) {
         filePaths = await getFiles(buildFromDirPath)
         filePaths = filePaths.map(absolutePath => path.relative('', absolutePath))
@@ -142,6 +146,8 @@ export default class DevFeature extends Command {
       
       for (let key in featureYAML) {
         featureYAML[key] = _.uniqWith(featureYAML[key], _.isEqual)
+        if (key == 'ManualSteps' || key == 'Version') continue
+        featureYAML[key].sort()
       }
 
       fs.writeFileSync(
