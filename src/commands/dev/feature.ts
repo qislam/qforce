@@ -192,7 +192,7 @@ export default class DevFeature extends Command {
     }
     
     if (flags.deploy) {
-      sfdx.source.deploy({targetusername: targetusername, 
+      await sfdx.source.deploy({targetusername: targetusername, 
         manifest: yamlPath.replace(/yml$/i, 'xml'), 
         json: true, 
         _rejectOnError: true})
